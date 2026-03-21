@@ -110,7 +110,7 @@ const VerificationStation = () => {
           admin_id: user.id,
           action: 'verify_student',
           target_user_id: student.user_id,
-          details: { target_type: 'profile', target_tribe: student.tribe, action: 'approved', nickname: student.nickname } as Record<string, never>,
+          details: { target_type: 'profile', target_tribe: student.tribe, action: 'approved', nickname: student.nickname } as unknown as Record<string, never>,
         });
       }
 
