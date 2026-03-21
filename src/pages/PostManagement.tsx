@@ -30,7 +30,6 @@ interface ManagedPost {
   user_id: string;
   tribe_id: string | null;
   fire_count: number;
-  comment_count: number | null;
   report_count: number;
   is_hidden: boolean;
   is_pinned: boolean;
