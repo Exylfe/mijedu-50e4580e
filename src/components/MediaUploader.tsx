@@ -29,6 +29,36 @@ const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }:
     return 'unknown';
   };
 
+  const handleUpload = async (file: File) => {
+    try {
+      // 1. Prepare the file path
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // 2. Attempt the upload
+      const { data, error } = await supabase.storage
+        .from('post-media') // Ensure this matches your bucket name
+        .upload(filePath, file);
+
+      // 3. If Supabase returns an error, "throw" it to the catch block
+      if (error) throw error;
+
+      console.log("Upload successful!", data);
+      return data;
+
+    } catch (error) {
+      // 4. This block runs if ANYTHING goes wrong
+      // It prevents the app from crashing/closing
+      console.error("Storage Error Detail:", error instanceof Error ? error.message : String(error));
+      
+      // Show a message to the user so they know why it failed
+      toast.error(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      return null;
+    }
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -44,29 +74,18 @@ const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }:
       return;
     }
 
-    // Get current user for ownership-based file paths
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error('You must be logged in to upload media.');
-      return;
-    }
-
     setIsUploading(true);
 
-    // Use user-ID-based path for ownership tracking: /{user_id}/{category}/{filename}
-    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const filePath = `${user.id}/${mediaCategory}/${fileName}`;
+    // Call the new handleUpload function
+    const uploadResult = await handleUpload(file);
 
-    const { error: uploadError } = await supabase.storage
-      .from('post-media')
-      .upload(filePath, file);
-
-    if (uploadError) {
-      toast.error('Upload failed. Please try again.');
+    if (!uploadResult) {
       setIsUploading(false);
       return;
     }
 
+    // Get the public URL after successful upload
+    const filePath = uploadResult.path;
     const { data: { publicUrl } } = supabase.storage
       .from('post-media')
       .getPublicUrl(filePath);
