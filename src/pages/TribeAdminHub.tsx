@@ -177,7 +177,7 @@ const TribeAdminHub = () => {
       admin_id: user.id,
       action: actionType,
       target_user_id: targetId || null,
-      details: { target_type: targetType, target_tribe: targetTribe || null, ...(details || {}) } as Record<string, never>
+      details: { target_type: targetType, target_tribe: targetTribe || null, ...(details || {}) } as unknown as Record<string, never>
     }]);
   };
 

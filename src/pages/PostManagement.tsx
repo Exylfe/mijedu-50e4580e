@@ -229,7 +229,7 @@ const PostManagement = () => {
 
                   <div className="flex items-center gap-3 text-xs text-slate-500 mb-3">
                     <span className="flex items-center gap-1"><Flame className="w-3 h-3" />{post.fire_count}</span>
-                    <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" />{post.comment_count || 0}</span>
+                    <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" />—</span>
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(post.created_at).toLocaleDateString()}</span>
                     <Badge variant="outline" className="border-slate-700 text-xs">{post.visibility}</Badge>
                   </div>

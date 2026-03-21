@@ -172,7 +172,7 @@ const Explore = () => {
                   <Building2 className="w-5 h-5 text-orange-500" />
                 </div>
                 <span className="text-xs font-medium text-foreground text-center line-clamp-2">{tribe.name}</span>
-                <span className="text-[10px] text-muted-foreground">{tribe.posts_last_7_days ?? 0} posts</span>
+                <span className="text-[10px] text-muted-foreground">{tribe.member_count ?? 0} members</span>
               </motion.button>
             ))}
           </div>
