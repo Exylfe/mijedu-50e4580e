@@ -87,8 +87,8 @@ const PostManagement = () => {
       setPosts(data.map(p => ({
         ...p,
         nickname: nickMap.get(p.user_id) || 'Unknown',
-        tribe_name: p.tribe_id ? tribeMap.get(p.tribe_id) || null : null
-      })));
+        tribe_name: (p as any).tribe_id ? tribeMap.get((p as any).tribe_id) || null : null
+      })) as unknown as ManagedPost[]);
     }
     setIsLoading(false);
   };

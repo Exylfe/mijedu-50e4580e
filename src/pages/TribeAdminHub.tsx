@@ -134,7 +134,7 @@ const TribeAdminHub = () => {
     
     if (data) {
       // Filter to posts from tribe members
-      const tribePosts = data.filter(p => p.profiles?.[0]?.tribe === targetTribe);
+      const tribePosts = data.filter(p => (p.profiles as any)?.[0]?.tribe === targetTribe);
       setFlaggedPosts(tribePosts as unknown as FlaggedPost[]);
     }
   };

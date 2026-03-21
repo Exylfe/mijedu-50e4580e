@@ -91,7 +91,7 @@ const TribePage = () => {
     // Filter posts where the author's tribe matches
     if (publicData && tribe) {
       const filteredPublic = publicData.filter(
-        post => post.profiles?.[0]?.tribe === tribe.name
+        post => (post.profiles as any)?.[0]?.tribe === tribe.name
       );
       setPublicPosts(filteredPublic as unknown as PostWithProfile[]);
     }

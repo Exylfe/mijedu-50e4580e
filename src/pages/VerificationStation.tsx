@@ -135,12 +135,10 @@ const VerificationStation = () => {
     } else {
       if (user) {
         await supabase.from('admin_action_logs').insert({
-          admin_user_id: user.id,
-          action_type: 'reject_verification',
-          target_type: 'profile',
-          target_id: student.user_id,
-          target_tribe: student.tribe,
-          details: { action: 'rejected', nickname: student.nickname },
+          admin_id: user.id,
+          action: 'reject_verification',
+          target_user_id: student.user_id,
+          details: { target_type: 'profile', target_tribe: student.tribe, action: 'rejected', nickname: student.nickname } as Record<string, never>,
         });
       }
 

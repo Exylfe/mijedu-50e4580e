@@ -18,24 +18,22 @@ const RoomLifecycleCard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data, error } = await supabase
-        .from('room_lifecycle_stats')
-        .select('*')
-        .single();
+    const fetchStats = async () => {
+      const { data, error } = await supabase.rpc('get_room_lifecycle_stats');
 
       if (!error && data) {
+        const parsed = typeof data === 'string' ? JSON.parse(data) : data;
         setStats({
-          total_rooms: data.total_rooms ?? 0,
-          active_rooms: data.active_rooms ?? 0,
-          expired_rooms: data.expired_rooms ?? 0,
-          average_room_lifespan_hours: data.average_room_lifespan_hours ?? 0,
-          average_messages_per_room: data.average_messages_per_room ?? 0,
+          total_rooms: parsed.total_rooms ?? 0,
+          active_rooms: parsed.active_rooms ?? 0,
+          expired_rooms: parsed.expired_rooms ?? 0,
+          average_room_lifespan_hours: Math.round(parsed.average_room_lifespan_hours ?? 0),
+          average_messages_per_room: Math.round(parsed.average_messages_per_room ?? 0),
         });
       }
       setLoading(false);
     };
-    fetch();
+    fetchStats();
   }, []);
 
   if (loading) {

@@ -85,7 +85,7 @@ const ControlTower = () => {
       .order('brand_name', { ascending: true });
 
     if (!error && data) {
-      setBrands(data as Brand[]);
+      setBrands(data as unknown as Brand[]);
     }
   };
 

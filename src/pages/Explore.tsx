@@ -58,14 +58,14 @@ const Explore = () => {
         supabase.from('user_roles').select('id', { count: 'exact', head: true }).eq('role', 'vip_brand'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_verified', true),
-        supabase.from('active_tribes').select('id, name, follower_count, posts_last_7_days').limit(10),
-        supabase.from('trending_tribes').select('id, name, follower_count').limit(10),
+        supabase.from('active_tribes').select('id, name, follower_count, member_count').limit(10),
+        supabase.from('trending_tribes').select('id, name, follower_count, post_count').limit(10),
       ]);
 
-      if (tribesResult.data) setTribes(tribesResult.data);
-      if (brandsResult.data) setBrands(brandsResult.data);
-      if (activeTribesResult.data) setActiveTribes(activeTribesResult.data);
-      if (trendingTribesResult.data) setTrendingTribes(trendingTribesResult.data);
+      if (tribesResult.data) setTribes(tribesResult.data as unknown as Tribe[]);
+      if (brandsResult.data) setBrands(brandsResult.data as unknown as Brand[]);
+      if (activeTribesResult.data) setActiveTribes(activeTribesResult.data as unknown as ActiveTribe[]);
+      if (trendingTribesResult.data) setTrendingTribes(trendingTribesResult.data as unknown as TrendingTribe[]);
 
       setBrandCount(brandRolesResult.count ?? brandsResult.data?.length ?? 0);
       setTribeCount(tribeCountResult.count || tribesResult.data?.length || 0);
