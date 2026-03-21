@@ -26,7 +26,6 @@ interface Brand {
   user_id: string;
   brand_name: string;
   is_active: boolean;
-  shop_data: Record<string, unknown>;
   logo_url: string | null;
 }
 
