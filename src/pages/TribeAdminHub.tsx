@@ -174,12 +174,10 @@ const TribeAdminHub = () => {
   const logAdminAction = async (actionType: string, targetType: string, targetId?: string, details?: object) => {
     if (!user?.id) return;
     await supabase.from('admin_action_logs').insert([{
-      admin_user_id: user.id,
-      action_type: actionType,
-      target_type: targetType,
-      target_id: targetId || null,
-      target_tribe: targetTribe || null,
-      details: (details || {}) as Record<string, never>
+      admin_id: user.id,
+      action: actionType,
+      target_user_id: targetId || null,
+      details: { target_type: targetType, target_tribe: targetTribe || null, ...(details || {}) } as Record<string, never>
     }]);
   };
 
