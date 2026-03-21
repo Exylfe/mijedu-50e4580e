@@ -24,13 +24,14 @@ interface ActiveTribe {
   id: string | null;
   name: string | null;
   follower_count: number | null;
-  posts_last_7_days: number | null;
+  member_count: number | null;
 }
 
 interface TrendingTribe {
   id: string | null;
   name: string | null;
   follower_count: number | null;
+  post_count: number | null;
 }
 
 const Explore = () => {
