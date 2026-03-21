@@ -96,28 +96,34 @@ export type Database = {
       }
       banners: {
         Row: {
+          brand_user_id: string | null
           created_at: string
           expires_at: string | null
           id: string
           image_url: string
           is_active: boolean
           link_url: string | null
+          status: string | null
         }
         Insert: {
+          brand_user_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
           image_url: string
           is_active?: boolean
           link_url?: string | null
+          status?: string | null
         }
         Update: {
+          brand_user_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
           image_url?: string
           is_active?: boolean
           link_url?: string | null
+          status?: string | null
         }
         Relationships: []
       }
@@ -331,6 +337,20 @@ export type Database = {
             foreignKeyName: "post_comments_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
+            referencedRelation: "following_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "hot_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
@@ -359,6 +379,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "following_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "hot_posts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "post_reactions_post_id_fkey"
             columns: ["post_id"]
@@ -395,6 +429,20 @@ export type Database = {
             foreignKeyName: "post_reports_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
+            referencedRelation: "following_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "hot_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
@@ -427,6 +475,20 @@ export type Database = {
             foreignKeyName: "post_views_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
+            referencedRelation: "following_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "hot_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
@@ -447,6 +509,7 @@ export type Database = {
           reach_limited: boolean | null
           report_count: number
           target_tribe: string | null
+          tribe_id: string | null
           updated_at: string
           user_id: string
           view_count: number
@@ -466,6 +529,7 @@ export type Database = {
           reach_limited?: boolean | null
           report_count?: number
           target_tribe?: string | null
+          tribe_id?: string | null
           updated_at?: string
           user_id: string
           view_count?: number
@@ -485,12 +549,35 @@ export type Database = {
           reach_limited?: boolean | null
           report_count?: number
           target_tribe?: string | null
+          tribe_id?: string | null
           updated_at?: string
           user_id?: string
           view_count?: number
           visibility?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "active_tribes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "trending_tribes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_categories: {
         Row: {
@@ -738,6 +825,20 @@ export type Database = {
             foreignKeyName: "profiles_tribe_id_fkey"
             columns: ["tribe_id"]
             isOneToOne: false
+            referencedRelation: "active_tribes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "trending_tribes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
             referencedRelation: "tribes"
             referencedColumns: ["id"]
           },
@@ -800,6 +901,13 @@ export type Database = {
             foreignKeyName: "room_messages_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "room_lifecycle_stats"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
@@ -837,6 +945,20 @@ export type Database = {
           tribe?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "rooms_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "following_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rooms_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "hot_posts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rooms_post_id_fkey"
             columns: ["post_id"]
@@ -977,10 +1099,117 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      active_tribes: {
+        Row: {
+          description: string | null
+          follower_count: number | null
+          id: string | null
+          is_visible: boolean | null
+          logo_url: string | null
+          member_count: number | null
+          name: string | null
+          type: string | null
+        }
+        Relationships: []
+      }
+      following_feed: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          fire_count: number | null
+          follower_user: string | null
+          id: string | null
+          is_hidden: boolean | null
+          media_type: string | null
+          media_url: string | null
+          report_count: number | null
+          target_tribe: string | null
+          user_id: string | null
+          visibility: string | null
+        }
+        Relationships: []
+      }
+      hot_posts: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          fire_count: number | null
+          hot_score: number | null
+          id: string | null
+          tribe_id: string | null
+          user_id: string | null
+          view_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "active_tribes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "trending_tribes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_lifecycle_stats: {
+        Row: {
+          created_at: string | null
+          is_active: boolean | null
+          last_activity_at: string | null
+          message_count: number | null
+          room_id: string | null
+          title: string | null
+          tribe: string | null
+        }
+        Relationships: []
+      }
+      trending_tribes: {
+        Row: {
+          follower_count: number | null
+          id: string | null
+          name: string | null
+          post_count: number | null
+          type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      award_points: {
+        Args: { _points: number; _reason: string; _user_id: string }
+        Returns: undefined
+      }
+      get_room_lifecycle_stats: { Args: never; Returns: Json }
+      get_room_message_counts: {
+        Args: { room_ids: string[] }
+        Returns: {
+          message_count: number
+          room_id: string
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_verified: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "user" | "tribe_admin" | "super_admin" | "vip_brand"
