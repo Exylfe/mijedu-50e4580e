@@ -117,7 +117,8 @@ const CreateAccountModal = ({ isOpen, onClose, onSuccess, tribes }: CreateAccoun
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-full hover:bg-muted transition-colors"
+                  disabled={isLoading}
+                  className="p-2 rounded-full hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
