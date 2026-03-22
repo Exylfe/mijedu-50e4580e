@@ -68,11 +68,17 @@ interface MemberCardProps {
   isSuperAdmin?: boolean;
 }
 
-const ROLE_OPTIONS = [
+const ALL_ROLE_OPTIONS = [
   { value: 'user', label: 'Student', icon: User },
   { value: 'tribe_admin', label: 'Tribe Admin', icon: Shield },
   { value: 'vip_brand', label: 'Brand', icon: Star },
   { value: 'super_admin', label: 'Super Admin', icon: Crown },
+];
+
+// Tribe admin can only assign: user, tribe_admin (same tribe)
+const TRIBE_ADMIN_ROLE_OPTIONS = [
+  { value: 'user', label: 'Student', icon: User },
+  { value: 'tribe_admin', label: 'Tribe Admin', icon: Shield },
 ];
 
 const MemberCard = ({ 
