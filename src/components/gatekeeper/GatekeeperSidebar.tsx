@@ -110,6 +110,13 @@ const GatekeeperSidebar = ({
         icon: Activity 
       },
     ] : []),
+    ...(isSuperAdmin ? [
+      { 
+        id: 'error-logs', 
+        label: 'Error Logs', 
+        icon: Bug 
+      },
+    ] : []),
     { 
       id: 'settings', 
       label: 'Settings', 
