@@ -6,6 +6,8 @@ type AppRole = 'user' | 'tribe_admin' | 'super_admin' | 'vip_brand';
 
 interface RoleManagerOptions {
   onSuccess?: () => void;
+  callerRole?: AppRole;
+  callerTribe?: string | null;
 }
 
 export const useRoleManager = (options?: RoleManagerOptions) => {
