@@ -20,6 +20,23 @@ export const useRoleManager = (options?: RoleManagerOptions) => {
   ): Promise<boolean> => {
     setIsProcessing(true);
     try {
+      // === TRIBE ADMIN RESTRICTIONS ===
+      const callerRole = options?.callerRole;
+      const callerTribe = options?.callerTribe;
+      
+      if (callerRole === 'tribe_admin') {
+        // Tribe admin can only assign: user, tribe_admin
+        if (newRole !== 'user' && newRole !== 'tribe_admin') {
+          toast.error('You can only assign Student or Tribe Admin roles');
+          return false;
+        }
+        // Tribe admin can only assign within their tribe
+        if (context?.tribe && context.tribe !== callerTribe) {
+          toast.error('You can only manage users in your own tribe');
+          return false;
+        }
+      }
+
       // Check if role already exists
       const { data: existing } = await supabase
         .from('user_roles')
