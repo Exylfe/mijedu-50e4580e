@@ -111,7 +111,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${import.meta.env.VITE_APP_URL || window.location.origin}/`,
             data: {
               nickname: nickname.trim(),
               tribe: selectedTribe,
