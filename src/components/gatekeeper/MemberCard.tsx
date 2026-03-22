@@ -93,7 +93,8 @@ const MemberCard = ({
   showTribe,
   tribes = [],
   onRoleChange,
-  userRoles = {}
+  userRoles = {},
+  isSuperAdmin = false
 }: MemberCardProps) => {
   const navigate = useNavigate();
   const [showAdminModal, setShowAdminModal] = useState(false);

@@ -57,6 +57,8 @@ const GatekeeperSidebar = ({
 }: GatekeeperSidebarProps) => {
   const navigate = useNavigate();
 
+  // Tribe admin sees ONLY: Overview, Members, Moderation
+  // Super admin sees everything
   const mainNavItems: NavItem[] = [
     { 
       id: 'overview', 
@@ -69,59 +71,23 @@ const GatekeeperSidebar = ({
       icon: Users,
       badge: pendingCount > 0 ? pendingCount : undefined
     },
-    ...(isSuperAdmin ? [
-      { 
-        id: 'tribes', 
-        label: 'Tribe Management', 
-        icon: Building2 
-      },
-    ] : []),
-    ...(isSuperAdmin ? [
-      { 
-        id: 'brand-centre', 
-        label: 'Brand Centre', 
-        icon: TrendingUp 
-      },
-    ] : []),
+    // Moderation is available to both tribe_admin and super_admin
     { 
-      id: 'ads', 
-      label: 'Banners & Ads', 
-      icon: Sparkles 
+      id: 'moderation', 
+      label: 'Moderation Queue', 
+      icon: AlertTriangle,
+      badge: pendingCount > 0 ? pendingCount : undefined
     },
+    // === SUPER ADMIN ONLY sections below ===
     ...(isSuperAdmin ? [
-      { 
-        id: 'student-shops', 
-        label: 'Student Shops', 
-        icon: Store 
-      },
+      { id: 'tribes', label: 'Tribe Management', icon: Building2 },
+      { id: 'brand-centre', label: 'Brand Centre', icon: TrendingUp },
+      { id: 'ads', label: 'Banners & Ads', icon: Sparkles },
+      { id: 'student-shops', label: 'Student Shops', icon: Store },
+      { id: 'activity', label: 'Activity', icon: Activity },
+      { id: 'error-logs', label: 'Error Logs', icon: Bug },
+      { id: 'settings', label: 'Settings', icon: Settings },
     ] : []),
-    ...(isSuperAdmin ? [
-      { 
-        id: 'moderation', 
-        label: 'Moderation Queue', 
-        icon: AlertTriangle,
-        badge: pendingCount > 0 ? pendingCount : undefined
-      },
-    ] : []),
-    ...(isSuperAdmin ? [
-      { 
-        id: 'activity', 
-        label: 'Activity', 
-        icon: Activity 
-      },
-    ] : []),
-    ...(isSuperAdmin ? [
-      { 
-        id: 'error-logs', 
-        label: 'Error Logs', 
-        icon: Bug 
-      },
-    ] : []),
-    { 
-      id: 'settings', 
-      label: 'Settings', 
-      icon: Settings 
-    },
   ];
 
   const toolsItems: NavItem[] = [
