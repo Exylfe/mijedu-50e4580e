@@ -693,7 +693,9 @@ export type Database = {
           is_sold_out: boolean
           is_special_offer: boolean
           price: number
+          shop_id: string | null
           status: string
+          stock_quantity: number | null
           target_tribe: string | null
           title: string
           updated_at: string
@@ -712,7 +714,9 @@ export type Database = {
           is_sold_out?: boolean
           is_special_offer?: boolean
           price?: number
+          shop_id?: string | null
           status?: string
+          stock_quantity?: number | null
           target_tribe?: string | null
           title: string
           updated_at?: string
@@ -731,7 +735,9 @@ export type Database = {
           is_sold_out?: boolean
           is_special_offer?: boolean
           price?: number
+          shop_id?: string | null
           status?: string
+          stock_quantity?: number | null
           target_tribe?: string | null
           title?: string
           updated_at?: string
