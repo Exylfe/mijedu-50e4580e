@@ -40,7 +40,7 @@ interface MakeAdminModalProps {
   isSuperAdmin?: boolean;
 }
 
-const roles = [
+const allRoles = [
   {
     id: 'super_admin',
     label: 'Super Admin',
@@ -49,6 +49,7 @@ const roles = [
     color: 'text-amber-500',
     bgColor: 'bg-amber-500/10',
     borderColor: 'border-amber-500/30',
+    superOnly: true,
   },
   {
     id: 'tribe_admin',
@@ -58,6 +59,7 @@ const roles = [
     color: 'text-primary',
     bgColor: 'bg-primary/10',
     borderColor: 'border-primary/30',
+    superOnly: false,
   },
   {
     id: 'vip_brand',
@@ -67,6 +69,7 @@ const roles = [
     color: 'text-emerald-500',
     bgColor: 'bg-emerald-500/10',
     borderColor: 'border-emerald-500/30',
+    superOnly: true,
   },
 ];
 
