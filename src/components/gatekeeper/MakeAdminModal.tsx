@@ -81,6 +81,7 @@ const MakeAdminModal = ({
   brands = [],
   onConfirm,
   isLoading = false,
+  isSuperAdmin = false,
 }: MakeAdminModalProps) => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [selectedTribe, setSelectedTribe] = useState<string>('');
