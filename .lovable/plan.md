@@ -1,66 +1,62 @@
-# Mijedu Platform -- Build Plan
 
-## Overview
 
-Mijedu is a student social platform with tribes (campus groups), posts/reactions, marketplace ("Bwalo"), chat rooms, stories, AI assistant, admin tools, and a points/leaderboard system. The source code from the zip contains ~236 files including full frontend and 6 database migrations.
+# Pilot-Ready Hardening Plan
 
-## Step 1: Run Database Migrations (Backend Setup)
+## 1. Branding & Metadata
+Update `index.html`: title to "Mijedu - Student Super-App", OG tags with Mijedu branding, description "Your campus super-app for tribes, marketplace, and student life", add favicon reference to Mijedu logo. Remove all Lovable references.
 
-Execute the 6 migration files in order against the connected Supabase project. These create:
+## 2. MediaUploader Hardening (`src/components/MediaUploader.tsx`)
+- **Image compression**: Use `browser-image-compression` (already installed) to compress images before upload -- max width 1200px, quality 0.7, max size 2MB
+- **Full try-catch**: Wrap entire upload flow in try-catch with user-friendly toast messages for network errors, timeouts, and storage failures
+- **Blob URL cleanup**: Call `URL.revokeObjectURL()` on preview URLs when media is removed or component unmounts
+- **File path sanitization**: Already uses `replace(/[^a-zA-Z0-9.-]/g, '_')` and user-ID-based paths -- this is already good, no changes needed
 
-- **1 enum**: `app_role` (user, tribe_admin, super_admin, vip_brand)
-- **22 tables**: profiles, user_roles, tribes, posts, post_comments, post_reactions, post_views, post_reports, entity_follows, brands, categories, products, product_categories, product_views, product_clicks, notifications, rooms, room_messages, stories, banners, banner_views, promoted_posts, student_shops, app_settings, admin_action_logs, points_history, course_documents
-- **6 security-definer functions**: has_role, is_admin, is_super_admin, is_verified, award_points, get_room_message_counts
-- **1 trigger**: handle_new_user (auto-creates profile + default role on signup)
-- **2 additional triggers**: sync_fire_count, update_room_last_activity
-- **50+ RLS policies** covering all tables
-- **5 views**: hot_posts, following_feed, active_tribes, trending_tribes, room_lifecycle_stats
-- **3 storage buckets**: post-media, banners, course-documents (with storage RLS policies)
-- **Realtime** enabled on 9 tables
-- **Seed data**: 3 initial tribes + 12 marketplace categories
+## 3. Auth Redirect URLs
+Update 4 locations to use production domain `https://mijedu.vercel.app`:
+- `src/pages/Auth.tsx` line 114: `emailRedirectTo`
+- `src/pages/Auth.tsx` line 277: Google OAuth `redirectTo`
+- `src/pages/Auth.tsx` line 308: password reset `redirectTo`
+- `src/contexts/AuthContext.tsx` line 210: signUp `emailRedirectTo`
 
-The later migrations add: brands status/logo columns, posts comments_locked/reach_limited, room message status, fire_count sync trigger, room activity trigger, product categories array, and category icons.
+Strategy: Use an environment variable `VITE_APP_URL` with fallback to `window.location.origin`, defaulting to `https://mijedu.vercel.app` in production.
 
-## Step 2: Deploy Edge Function
+## 4. CreateAccountModal UX (`src/components/gatekeeper/CreateAccountModal.tsx`)
+- Already has loading state and spinner -- good
+- Add better error handling: detect "Failed to fetch" specifically and show "Connection error. Check your internet and try again." message
+- Disable the close button and form inputs while loading to prevent accidental dismissal
 
-Deploy the `ai-chat` edge function. It uses `LOVABLE_API_KEY` (already set) to proxy AI queries through the Lovable AI gateway. Supports streaming responses, conversation history, and course-document tutor mode.
+## 5. Error Dashboard
+Create an `error_logs` table in Supabase to capture client-side errors, and update `errorLogger.ts` to write errors there. Build a simple error viewer section in the Gatekeeper admin panel.
 
-## Step 3: Copy All Frontend Source Code
+**Database migration**: Create `error_logs` table with columns: `id`, `created_at`, `user_id` (nullable), `error_type`, `error_message`, `context` (jsonb), `user_agent`, `url`.
 
-Replace the current placeholder app with the full source from the zip (~200+ files):
+**New component**: `src/components/gatekeeper/ErrorLogsSection.tsx` -- a simple table showing recent errors with filtering by type.
 
-- **3 context providers**: AuthContext, ViewAsContext, ProfileCardContext
-- **30+ pages**: Auth, SocietyFeed, Market, TribeFeed, Rooms, RoomChat, Explore, Settings, ProfilePage, Leaderboard, AIAssistant, Gatekeeper, ExecutiveConsole, BrandHub, CreatorStudio, ShopOffice, VerificationStation, TribeAdminHub, PostManagement, and more
-- **60+ components**: PostCard, CommentSection, StoryTray, NotificationBell, BottomNav, MediaUploader, ProductDetailModal, DigitalIDCard, SplashScreen, etc.
-- **15+ hooks**: useAIChat, useEntityFollow, useNotifications, useRoleManager, useCategories, useCourses, useLeaderboard, useMaintenanceMode, etc.
-- **3 utility modules**: errorLogger, pointsSystem, demoContentGenerator
-- **Updated App.tsx** with full routing (protected, admin, brand routes)
-- **Updated index.css** with Mijedu theme (purple/pink gradients, Sora font)
-- **Updated tailwind.config.ts** with custom design tokens
-- **Updated package.json** with additional dependencies (framer-motion, react-markdown, browser-image-compression, recharts, @fontsource/sora)
+**Update errorLogger.ts**: Post errors to Supabase (fire-and-forget, never crash the app if logging fails). Include device info and current URL.
 
-## Step 4: Update Supabase Client
-
-Point `src/integrations/supabase/client.ts` to the connected Supabase project (already done -- URL and anon key match). Remove `@lovable.dev/cloud-auth-js` dependency since we're using external Supabase.
-
-## Step 5: Verify & Test
-
-- Confirm all tables exist and RLS is active
-- Test the ai-chat edge function
-- Verify the app loads, auth flow works (signup with tribe selection, verification gate)
+## 6. Additional Issues Found
+- **Memory leaks**: Add cleanup for blob URLs in MediaUploader via `useEffect` return
+- **Toast import consistency**: Ensure all files use `sonner` toast (already consistent)
 
 ---
 
 ## Technical Details
 
-**Migration strategy**: The first migration (`20260318000001_full_schema.sql`) is a monolithic schema file. However, it duplicates content with the second migration (`20260318201120`), which recreates the same tables/functions/policies. To avoid conflicts, I will consolidate into a single clean migration that uses `IF NOT EXISTS` and `OR REPLACE` patterns throughout, then apply the 4 incremental migrations on top.
+**Files to modify:**
+- `index.html` -- metadata
+- `.env` -- add `VITE_APP_URL=https://mijedu.vercel.app`
+- `src/components/MediaUploader.tsx` -- compression, try-catch, blob cleanup
+- `src/pages/Auth.tsx` -- redirect URLs
+- `src/contexts/AuthContext.tsx` -- redirect URL
+- `src/components/gatekeeper/CreateAccountModal.tsx` -- error messaging
+- `src/utils/errorLogger.ts` -- write to Supabase
+- `src/pages/Gatekeeper.tsx` -- add error logs tab
 
-**Dependencies to add**: `@fontsource/sora`, `browser-image-compression`, `framer-motion`, `react-markdown`, `recharts`, `@tailwindcss/typography`
+**New files:**
+- `src/components/gatekeeper/ErrorLogsSection.tsx`
 
-**Dependencies to remove**: `@lovable.dev/cloud-auth-js` (Lovable Cloud auth -- not applicable for external Supabase)
+**Database migration:**
+- Create `error_logs` table with RLS (admins can read, anyone authenticated can insert)
 
-**Storage buckets**: Created via migration SQL (`INSERT INTO storage.buckets`). Storage RLS policies allow public read on all buckets, authenticated upload on post-media and course-documents.
+**No new dependencies needed** -- `browser-image-compression` is already in `package.json`.
 
-**Realtime**: 9 tables added to `supabase_realtime` publication for live updates on posts, comments, reactions, notifications, rooms, messages, stories, follows, and profiles.
-
-Remember to follow the schema provided u can add any missing ones 
