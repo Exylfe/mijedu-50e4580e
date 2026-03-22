@@ -65,13 +65,20 @@ interface MemberCardProps {
   tribes?: Tribe[];
   onRoleChange?: (member: Member, newRole: string) => void;
   userRoles?: Record<string, string>;
+  isSuperAdmin?: boolean;
 }
 
-const ROLE_OPTIONS = [
+const ALL_ROLE_OPTIONS = [
   { value: 'user', label: 'Student', icon: User },
   { value: 'tribe_admin', label: 'Tribe Admin', icon: Shield },
   { value: 'vip_brand', label: 'Brand', icon: Star },
   { value: 'super_admin', label: 'Super Admin', icon: Crown },
+];
+
+// Tribe admin can only assign: user, tribe_admin (same tribe)
+const TRIBE_ADMIN_ROLE_OPTIONS = [
+  { value: 'user', label: 'Student', icon: User },
+  { value: 'tribe_admin', label: 'Tribe Admin', icon: Shield },
 ];
 
 const MemberCard = ({ 
@@ -86,7 +93,8 @@ const MemberCard = ({
   showTribe,
   tribes = [],
   onRoleChange,
-  userRoles = {}
+  userRoles = {},
+  isSuperAdmin = false
 }: MemberCardProps) => {
   const navigate = useNavigate();
   const [showAdminModal, setShowAdminModal] = useState(false);
@@ -99,9 +107,16 @@ const MemberCard = ({
     const role = userRoles[member.user_id] || 'user';
     setCurrentRole(role);
   }, [userRoles, member.user_id]);
+  // Tribe admin restrictions: can only assign user/tribe_admin, cannot touch super_admin or vip_brand users
+  const ROLE_OPTIONS = isSuperAdmin ? ALL_ROLE_OPTIONS : TRIBE_ADMIN_ROLE_OPTIONS;
+  const isProtectedUser = !isSuperAdmin && (currentRole === 'super_admin' || currentRole === 'vip_brand');
 
   const handleRoleChange = async (newRole: string) => {
     if (newRole === currentRole) return;
+    if (isProtectedUser) {
+      toast.error('You cannot modify this user\'s role');
+      return;
+    }
     
     setChangingRole(true);
     
@@ -224,7 +239,7 @@ const MemberCard = ({
               <Select
                 value={currentRole}
                 onValueChange={handleRoleChange}
-                disabled={changingRole}
+                disabled={changingRole || isProtectedUser}
               >
                 <SelectTrigger className="w-28 h-8 text-xs bg-muted/50 border-border/50">
                   {changingRole ? (
@@ -284,15 +299,20 @@ const MemberCard = ({
                     </DropdownMenuItem>
                   )}
 
-                  <DropdownMenuItem onClick={() => setShowAdminModal(true)}>
-                    <Crown className="w-4 h-4 mr-2 text-accent-foreground" />
-                    Make Admin
-                  </DropdownMenuItem>
+                  {/* Hide role management for protected users when tribe_admin */}
+                  {!isProtectedUser && (
+                    <>
+                      <DropdownMenuItem onClick={() => setShowAdminModal(true)}>
+                        <Crown className="w-4 h-4 mr-2 text-accent-foreground" />
+                        Make Admin
+                      </DropdownMenuItem>
 
-                  <DropdownMenuItem onClick={() => onRevokeAdmin(member)}>
-                    <UserCog className="w-4 h-4 mr-2" />
-                    Revoke Admin
-                  </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onRevokeAdmin(member)}>
+                        <UserCog className="w-4 h-4 mr-2" />
+                        Revoke Admin
+                      </DropdownMenuItem>
+                    </>
+                  )}
 
                   <DropdownMenuSeparator />
 
@@ -328,6 +348,7 @@ const MemberCard = ({
         tribes={tribes.length > 0 ? tribes : [{ id: member.tribe, name: member.tribe, type: member.tribe_type }]}
         onConfirm={handleMakeAdmin}
         isLoading={isProcessing}
+        isSuperAdmin={isSuperAdmin}
       />
     </>
   );

@@ -1231,6 +1231,10 @@ export type Database = {
         Args: { _points: number; _reason: string; _user_id: string }
         Returns: undefined
       }
+      can_admin_modify: {
+        Args: { _admin_id: string; _target_user_id: string }
+        Returns: boolean
+      }
       get_room_lifecycle_stats: { Args: never; Returns: Json }
       get_room_message_counts: {
         Args: { room_ids: string[] }
@@ -1247,6 +1251,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_same_tribe_admin: {
+        Args: { _admin_id: string; _target_user_id: string }
+        Returns: boolean
+      }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_verified: { Args: { _user_id: string }; Returns: boolean }
     }

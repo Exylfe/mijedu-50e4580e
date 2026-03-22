@@ -55,9 +55,16 @@ const MembersSection = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  // Filtering is now DB-side; use allMembers directly
-  const filteredAllMembers = allMembers;
-  const filteredPendingMembers = pendingMembers;
+  // For tribe_admin: filter out super_admin and vip_brand users from the list
+  const visibleMembers = isSuperAdmin 
+    ? allMembers 
+    : allMembers.filter(m => {
+        const memberRole = userRoles[m.user_id];
+        return memberRole !== 'super_admin' && memberRole !== 'vip_brand';
+      });
+
+  const filteredAllMembers = visibleMembers;
+  const filteredPendingMembers = visibleMembers.filter(m => !m.is_verified);
 
   const verifiedMembers = filteredAllMembers.filter(m => m.is_verified);
 
@@ -282,7 +289,7 @@ const MembersSection = ({
             </GlassCard>
           ) : (
             <div className="space-y-2">
-              {displayMembers.map((member, index) => (
+               {displayMembers.map((member, index) => (
                 <MemberCard
                   key={member.id}
                   member={member}
@@ -297,6 +304,7 @@ const MembersSection = ({
                   tribes={tribes}
                   userRoles={userRoles}
                   onRoleChange={onRoleChange}
+                  isSuperAdmin={isSuperAdmin}
                 />
               ))}
             </div>
