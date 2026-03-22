@@ -15,7 +15,8 @@ import {
   GraduationCap,
   Activity,
   Store,
-  AlertTriangle
+  AlertTriangle,
+  Bug
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -107,6 +108,13 @@ const GatekeeperSidebar = ({
         id: 'activity', 
         label: 'Activity', 
         icon: Activity 
+      },
+    ] : []),
+    ...(isSuperAdmin ? [
+      { 
+        id: 'error-logs', 
+        label: 'Error Logs', 
+        icon: Bug 
       },
     ] : []),
     { 

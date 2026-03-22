@@ -1,7 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Image, Video, Music, FileText, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import imageCompression from 'browser-image-compression';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MediaUploaderProps {
   onMediaUploaded: (url: string, type: string) => void;
@@ -17,9 +19,28 @@ const ALLOWED_TYPES = {
   file: ['application/pdf']
 };
 
+const MAX_FILE_SIZE_MB = 50;
+const IMAGE_COMPRESSION_OPTIONS = {
+  maxSizeMB: 2,
+  maxWidthOrHeight: 1200,
+  initialQuality: 0.7,
+  useWebWorker: true,
+};
+
 const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }: MediaUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
+
+  // Clean up blob URLs on unmount or when preview changes
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const getMediaCategory = (mimeType: string): string => {
     if (ALLOWED_TYPES.image.includes(mimeType)) return 'image';
@@ -29,33 +50,21 @@ const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }:
     return 'unknown';
   };
 
-  const handleUpload = async (file: File) => {
+  const sanitizeFileName = (name: string): string => {
+    const ext = name.split('.').pop() || '';
+    const base = name.replace(/\.[^/.]+$/, '');
+    const sanitized = base.replace(/[^a-zA-Z0-9.-]/g, '_');
+    return `${sanitized}_${Date.now()}.${ext}`;
+  };
+
+  const compressImage = async (file: File): Promise<File> => {
     try {
-      // 1. Prepare the file path
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      // 2. Attempt the upload
-      const { data, error } = await supabase.storage
-        .from('post-media') // Ensure this matches your bucket name
-        .upload(filePath, file);
-
-      // 3. If Supabase returns an error, "throw" it to the catch block
-      if (error) throw error;
-
-      console.log("Upload successful!", data);
-      return data;
-
-    } catch (error) {
-      // 4. This block runs if ANYTHING goes wrong
-      // It prevents the app from crashing/closing
-      console.error("Storage Error Detail:", error instanceof Error ? error.message : String(error));
-      
-      // Show a message to the user so they know why it failed
-      toast.error(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
-      return null;
+      const compressed = await imageCompression(file, IMAGE_COMPRESSION_OPTIONS);
+      console.log(`Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressed.size / 1024 / 1024).toFixed(2)}MB`);
+      return compressed;
+    } catch (err) {
+      console.warn('Image compression failed, using original:', err);
+      return file;
     }
   };
 
@@ -69,33 +78,72 @@ const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }:
       return;
     }
 
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error('File too large. Maximum size is 50MB.');
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      toast.error(`File too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`);
       return;
     }
 
     setIsUploading(true);
 
-    // Call the new handleUpload function
-    const uploadResult = await handleUpload(file);
+    try {
+      // Compress images before upload
+      let fileToUpload: File = file;
+      if (mediaCategory === 'image') {
+        toast.info('Compressing image…');
+        fileToUpload = await compressImage(file);
+      }
 
-    if (!uploadResult) {
+      // Build sanitized path: userId/category/filename
+      const userId = user?.id || 'anonymous';
+      const sanitizedName = sanitizeFileName(file.name);
+      const filePath = `${userId}/${mediaCategory}/${sanitizedName}`;
+
+      const { data, error } = await supabase.storage
+        .from('post-media')
+        .upload(filePath, fileToUpload);
+
+      if (error) {
+        if (error.message?.includes('Payload too large') || error.message?.includes('413')) {
+          toast.error('File is too large for upload. Try a smaller file.');
+        } else if (error.message?.includes('mime') || error.message?.includes('type')) {
+          toast.error('This file format is not allowed.');
+        } else {
+          toast.error(`Upload failed: ${error.message}`);
+        }
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('post-media')
+        .getPublicUrl(data.path);
+
+      // Revoke old preview if exists
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
+
+      onMediaUploaded(publicUrl, mediaCategory);
+      toast.success('Media uploaded!');
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      if (err?.message?.includes('Failed to fetch') || err?.name === 'TypeError') {
+        toast.error('Network error. Check your internet connection and try again.');
+      } else if (err?.message?.includes('memory') || err?.message?.includes('OOM')) {
+        toast.error('File too large for your device. Try a smaller photo or screenshot.');
+      } else {
+        toast.error(`Upload failed: ${err?.message || 'Unknown error. Please try again.'}`);
+      }
+    } finally {
       setIsUploading(false);
-      return;
     }
-
-    // Get the public URL after successful upload
-    const filePath = uploadResult.path;
-    const { data: { publicUrl } } = supabase.storage
-      .from('post-media')
-      .getPublicUrl(filePath);
-
-    onMediaUploaded(publicUrl, mediaCategory);
-    setIsUploading(false);
-    toast.success('Media uploaded!');
   };
 
   const handleRemove = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
     onMediaRemoved();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -116,6 +164,7 @@ const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }:
           onChange={handleFileSelect}
           className="hidden"
           id="media-upload"
+          disabled={isUploading}
         />
         <label
           htmlFor="media-upload"

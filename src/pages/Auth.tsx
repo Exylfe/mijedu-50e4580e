@@ -111,7 +111,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${import.meta.env.VITE_APP_URL || window.location.origin}/`,
             data: {
               nickname: nickname.trim(),
               tribe: selectedTribe,
@@ -274,7 +274,7 @@ const Auth = () => {
                 try {
                   const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
-                    options: { redirectTo: window.location.origin },
+                    options: { redirectTo: import.meta.env.VITE_APP_URL || window.location.origin },
                   });
                   if (error) toast.error(String(error));
                 } catch (err) {
@@ -305,7 +305,7 @@ const Auth = () => {
                       return;
                     }
                     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                      redirectTo: `${window.location.origin}/reset-password`,
+                      redirectTo: `${import.meta.env.VITE_APP_URL || window.location.origin}/reset-password`,
                     });
                     if (error) toast.error(error.message);
                     else toast.success('Password reset link sent to your email');

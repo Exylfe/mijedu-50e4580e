@@ -20,6 +20,7 @@ import CreateAccountModal from '@/components/gatekeeper/CreateAccountModal';
 import GatekeeperSidebar from '@/components/gatekeeper/GatekeeperSidebar';
 import StudentShopsAdmin from '@/components/gatekeeper/StudentShopsAdmin';
 import ModerationQueue from '@/components/gatekeeper/ModerationQueue';
+import ErrorLogsSection from '@/components/gatekeeper/ErrorLogsSection';
 
 interface Member {
   id: string;
@@ -293,6 +294,8 @@ const Gatekeeper = () => {
         return <StudentShopsAdmin />;
       case 'moderation':
         return <ModerationQueue />;
+      case 'error-logs':
+        return <ErrorLogsSection />;
       case 'settings':
         return <SettingsSection />;
       default:

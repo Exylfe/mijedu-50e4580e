@@ -81,7 +81,11 @@ const CreateAccountModal = ({ isOpen, onClose, onSuccess, tribes }: CreateAccoun
       onClose();
     } catch (error: any) {
       console.error('Error creating account:', error);
-      toast.error(error.message || 'Failed to create account');
+      if (error?.message?.includes('Failed to fetch') || error?.name === 'TypeError') {
+        toast.error('Connection error. Check your internet connection and try again. If the issue persists, the server may be temporarily unavailable.');
+      } else {
+        toast.error(error.message || 'Failed to create account');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +99,7 @@ const CreateAccountModal = ({ isOpen, onClose, onSuccess, tribes }: CreateAccoun
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          onClick={onClose}
+          onClick={isLoading ? undefined : onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -113,7 +117,8 @@ const CreateAccountModal = ({ isOpen, onClose, onSuccess, tribes }: CreateAccoun
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-full hover:bg-muted transition-colors"
+                  disabled={isLoading}
+                  className="p-2 rounded-full hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>

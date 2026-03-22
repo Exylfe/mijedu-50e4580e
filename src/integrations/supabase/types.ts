@@ -250,6 +250,39 @@ export type Database = {
         }
         Relationships: []
       }
+      error_logs: {
+        Row: {
+          context: Json | null
+          created_at: string
+          error_message: string
+          error_type: string
+          id: string
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          error_message: string
+          error_type: string
+          id?: string
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          error_message?: string
+          error_type?: string
+          id?: string
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           actor_id: string | null
@@ -693,7 +726,9 @@ export type Database = {
           is_sold_out: boolean
           is_special_offer: boolean
           price: number
+          shop_id: string | null
           status: string
+          stock_quantity: number | null
           target_tribe: string | null
           title: string
           updated_at: string
@@ -712,7 +747,9 @@ export type Database = {
           is_sold_out?: boolean
           is_special_offer?: boolean
           price?: number
+          shop_id?: string | null
           status?: string
+          stock_quantity?: number | null
           target_tribe?: string | null
           title: string
           updated_at?: string
@@ -731,7 +768,9 @@ export type Database = {
           is_sold_out?: boolean
           is_special_offer?: boolean
           price?: number
+          shop_id?: string | null
           status?: string
+          stock_quantity?: number | null
           target_tribe?: string | null
           title?: string
           updated_at?: string
