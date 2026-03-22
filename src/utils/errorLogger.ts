@@ -11,14 +11,14 @@ export const logError = async (
     // Fire-and-forget: persist to error_logs table
     const { data: { user } } = await supabase.auth.getUser();
 
-    await supabase.from('error_logs').insert({
+    await supabase.from('error_logs').insert([{
       error_type: errorType,
       error_message: errorMessage.slice(0, 2000),
-      context: context || {},
+      context: (context || {}) as any,
       user_id: user?.id || null,
       user_agent: navigator.userAgent,
       url: window.location.href,
-    });
+    }]);
   } catch {
     // Never let error logging crash the app
     console.error('Failed to log error:', errorType, errorMessage);
