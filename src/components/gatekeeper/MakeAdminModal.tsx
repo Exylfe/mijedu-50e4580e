@@ -37,6 +37,7 @@ interface MakeAdminModalProps {
   brands?: Brand[];
   onConfirm: (role: 'super_admin' | 'tribe_admin' | 'vip_brand', tribeOrBrand?: string) => void;
   isLoading?: boolean;
+  isSuperAdmin?: boolean;
 }
 
 const roles = [
