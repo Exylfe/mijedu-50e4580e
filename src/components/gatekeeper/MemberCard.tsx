@@ -107,9 +107,16 @@ const MemberCard = ({
     const role = userRoles[member.user_id] || 'user';
     setCurrentRole(role);
   }, [userRoles, member.user_id]);
+  // Tribe admin restrictions: can only assign user/tribe_admin, cannot touch super_admin or vip_brand users
+  const ROLE_OPTIONS = isSuperAdmin ? ALL_ROLE_OPTIONS : TRIBE_ADMIN_ROLE_OPTIONS;
+  const isProtectedUser = !isSuperAdmin && (currentRole === 'super_admin' || currentRole === 'vip_brand');
 
   const handleRoleChange = async (newRole: string) => {
     if (newRole === currentRole) return;
+    if (isProtectedUser) {
+      toast.error('You cannot modify this user\'s role');
+      return;
+    }
     
     setChangingRole(true);
     
