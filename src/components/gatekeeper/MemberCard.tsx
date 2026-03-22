@@ -348,6 +348,7 @@ const MemberCard = ({
         tribes={tribes.length > 0 ? tribes : [{ id: member.tribe, name: member.tribe, type: member.tribe_type }]}
         onConfirm={handleMakeAdmin}
         isLoading={isProcessing}
+        isSuperAdmin={isSuperAdmin}
       />
     </>
   );
