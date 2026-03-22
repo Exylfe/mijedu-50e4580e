@@ -81,7 +81,11 @@ const CreateAccountModal = ({ isOpen, onClose, onSuccess, tribes }: CreateAccoun
       onClose();
     } catch (error: any) {
       console.error('Error creating account:', error);
-      toast.error(error.message || 'Failed to create account');
+      if (error?.message?.includes('Failed to fetch') || error?.name === 'TypeError') {
+        toast.error('Connection error. Check your internet connection and try again. If the issue persists, the server may be temporarily unavailable.');
+      } else {
+        toast.error(error.message || 'Failed to create account');
+      }
     } finally {
       setIsLoading(false);
     }
