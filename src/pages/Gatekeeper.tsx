@@ -281,23 +281,23 @@ const Gatekeeper = () => {
           </div>
         );
       case 'tribes':
-        return (
+        return isSuperAdmin ? (
           <TribeGrid tribes={tribes} onRefresh={fetchTribes} memberCounts={memberCounts} onTribeClick={handleTribeClick} />
-        );
+        ) : null;
       case 'brand-centre':
-        return <BrandCentreSection />;
+        return isSuperAdmin ? <BrandCentreSection /> : null;
       case 'ads':
-        return <BannersSection />;
+        return isSuperAdmin ? <BannersSection /> : null;
       case 'activity':
-        return <ActivitySection />;
+        return isSuperAdmin ? <ActivitySection /> : null;
       case 'student-shops':
-        return <StudentShopsAdmin />;
+        return isSuperAdmin ? <StudentShopsAdmin /> : null;
       case 'moderation':
         return <ModerationQueue />;
       case 'error-logs':
-        return <ErrorLogsSection />;
+        return isSuperAdmin ? <ErrorLogsSection /> : null;
       case 'settings':
-        return <SettingsSection />;
+        return isSuperAdmin ? <SettingsSection /> : null;
       default:
         return null;
     }
