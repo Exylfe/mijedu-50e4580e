@@ -65,6 +65,7 @@ interface MemberCardProps {
   tribes?: Tribe[];
   onRoleChange?: (member: Member, newRole: string) => void;
   userRoles?: Record<string, string>;
+  isSuperAdmin?: boolean;
 }
 
 const ROLE_OPTIONS = [
