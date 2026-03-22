@@ -168,7 +168,7 @@ const MakeAdminModal = ({
 
                 {/* Role Selection */}
                 <div className="space-y-2">
-                  {roles.map((role) => {
+                  {allRoles.filter(r => isSuperAdmin || !r.superOnly).map((role) => {
                     const Icon = role.icon;
                     const isSelected = selectedRole === role.id;
 
