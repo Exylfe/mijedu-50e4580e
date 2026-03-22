@@ -294,6 +294,8 @@ const Gatekeeper = () => {
         return <StudentShopsAdmin />;
       case 'moderation':
         return <ModerationQueue />;
+      case 'error-logs':
+        return <ErrorLogsSection />;
       case 'settings':
         return <SettingsSection />;
       default:

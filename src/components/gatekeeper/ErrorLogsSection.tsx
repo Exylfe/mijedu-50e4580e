@@ -36,8 +36,9 @@ const ErrorLogsSection = () => {
 
     const { data, error } = await query;
     if (!error && data) {
-      setLogs(data as ErrorLog[]);
-      const types = [...new Set((data as ErrorLog[]).map(l => l.error_type))];
+      const typedLogs = data as unknown as ErrorLog[];
+      setLogs(typedLogs);
+      const types = [...new Set(typedLogs.map(l => l.error_type))];
       if (types.length > errorTypes.length) setErrorTypes(types);
     }
     setLoading(false);
