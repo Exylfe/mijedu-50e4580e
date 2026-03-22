@@ -289,7 +289,7 @@ const MembersSection = ({
             </GlassCard>
           ) : (
             <div className="space-y-2">
-              {displayMembers.map((member, index) => (
+               {displayMembers.map((member, index) => (
                 <MemberCard
                   key={member.id}
                   member={member}
@@ -304,6 +304,7 @@ const MembersSection = ({
                   tribes={tribes}
                   userRoles={userRoles}
                   onRoleChange={onRoleChange}
+                  isSuperAdmin={isSuperAdmin}
                 />
               ))}
             </div>
