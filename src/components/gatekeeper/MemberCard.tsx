@@ -299,15 +299,20 @@ const MemberCard = ({
                     </DropdownMenuItem>
                   )}
 
-                  <DropdownMenuItem onClick={() => setShowAdminModal(true)}>
-                    <Crown className="w-4 h-4 mr-2 text-accent-foreground" />
-                    Make Admin
-                  </DropdownMenuItem>
+                  {/* Hide role management for protected users when tribe_admin */}
+                  {!isProtectedUser && (
+                    <>
+                      <DropdownMenuItem onClick={() => setShowAdminModal(true)}>
+                        <Crown className="w-4 h-4 mr-2 text-accent-foreground" />
+                        Make Admin
+                      </DropdownMenuItem>
 
-                  <DropdownMenuItem onClick={() => onRevokeAdmin(member)}>
-                    <UserCog className="w-4 h-4 mr-2" />
-                    Revoke Admin
-                  </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onRevokeAdmin(member)}>
+                        <UserCog className="w-4 h-4 mr-2" />
+                        Revoke Admin
+                      </DropdownMenuItem>
+                    </>
+                  )}
 
                   <DropdownMenuSeparator />
 
