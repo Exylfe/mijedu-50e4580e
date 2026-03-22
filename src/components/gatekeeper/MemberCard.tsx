@@ -239,7 +239,7 @@ const MemberCard = ({
               <Select
                 value={currentRole}
                 onValueChange={handleRoleChange}
-                disabled={changingRole}
+                disabled={changingRole || isProtectedUser}
               >
                 <SelectTrigger className="w-28 h-8 text-xs bg-muted/50 border-border/50">
                   {changingRole ? (
