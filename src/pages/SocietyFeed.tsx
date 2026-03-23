@@ -127,7 +127,7 @@ const SocietyFeed = () => {
       const existingIds = new Set(validData.map(p => p.id));
       const { data: hotData } = await supabase
         .from('hot_posts')
-        .select('id, content, fire_count, created_at, user_id, view_count, tribe_id')
+        .select('id, content, fire_count, created_at, user_id, view_count, tribe_id, media_url, media_type')
         .order('hot_score', { ascending: false })
         .limit(backfillNeeded + 5);
 
@@ -140,8 +140,8 @@ const SocietyFeed = () => {
           is_hidden: false,
           visibility: 'public',
           target_tribe: null,
-          media_url: null,
-          media_type: null,
+          media_url: (p as any).media_url || null,
+          media_type: (p as any).media_type || null,
         }));
 
       const combined = [...validData, ...backfill];

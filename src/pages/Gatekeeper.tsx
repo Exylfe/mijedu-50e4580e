@@ -297,6 +297,8 @@ const Gatekeeper = () => {
         return <ModerationQueue />;
       case 'error-logs':
         return isSuperAdmin ? <ErrorLogsSection /> : null;
+      case 'feedback':
+        return isSuperAdmin ? <FeedbackSection /> : null;
       case 'settings':
         return isSuperAdmin ? <SettingsSection /> : null;
       default:

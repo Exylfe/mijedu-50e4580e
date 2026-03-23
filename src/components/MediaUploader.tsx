@@ -156,7 +156,14 @@ const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }:
   return (
     <div className="space-y-3">
       {/* Attachment Bar */}
-      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/50">
+      <div className="relative flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/50">
+        {/* Full overlay when uploading */}
+        {isUploading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 rounded-lg bg-background/90 backdrop-blur-sm">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            <span className="text-sm font-medium text-foreground">Optimizing & Uploading…</span>
+          </div>
+        )}
         <span className="text-xs text-muted-foreground mr-2">Attach:</span>
         <input
           ref={fileInputRef}
@@ -169,35 +176,32 @@ const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }:
         />
         <label
           htmlFor="media-upload"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-neon-purple/20 text-neon-purple text-xs font-medium hover:bg-neon-purple/30 transition-colors cursor-pointer"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/20 text-primary text-xs font-medium hover:bg-primary/30 transition-colors ${isUploading ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
         >
           <Image className="w-4 h-4" />
           Photo
         </label>
         <label
           htmlFor="media-upload"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-neon-pink/20 text-neon-pink text-xs font-medium hover:bg-neon-pink/30 transition-colors cursor-pointer"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary/20 text-secondary text-xs font-medium hover:bg-secondary/30 transition-colors ${isUploading ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
         >
           <Video className="w-4 h-4" />
           Video
         </label>
         <label
           htmlFor="media-upload"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-neon-green/20 text-neon-green text-xs font-medium hover:bg-neon-green/30 transition-colors cursor-pointer"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-accent/40 text-accent-foreground text-xs font-medium hover:bg-accent/60 transition-colors ${isUploading ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
         >
           <Music className="w-4 h-4" />
           Audio
         </label>
         <label
           htmlFor="media-upload"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors cursor-pointer"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors ${isUploading ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
         >
           <FileText className="w-4 h-4" />
           PDF
         </label>
-        {isUploading && (
-          <Loader2 className="w-4 h-4 animate-spin text-neon-purple ml-auto" />
-        )}
       </div>
 
       {/* Media Preview */}
