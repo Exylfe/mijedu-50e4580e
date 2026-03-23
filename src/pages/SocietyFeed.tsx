@@ -10,6 +10,7 @@ import CreatePostModal from '@/components/CreatePostModal';
 import BannerCarousel from '@/components/BannerCarousel';
 import StoryTray from '@/components/StoryTray';
 import ImmersiveHeader from '@/components/ImmersiveHeader';
+import FeedbackPopup from '@/components/FeedbackPopup';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -71,6 +72,7 @@ const SocietyFeed = () => {
   const [activeTab, setActiveTab] = useState<FeedTab>('following');
   const [hasFollowing, setHasFollowing] = useState(false);
   const [defaultContent, setDefaultContent] = useState<string | undefined>(undefined);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const canPost = isSuperAdmin || isAdmin || (profile?.is_verified && profile?.tribe_id);
 
@@ -127,7 +129,7 @@ const SocietyFeed = () => {
       const existingIds = new Set(validData.map(p => p.id));
       const { data: hotData } = await supabase
         .from('hot_posts')
-        .select('id, content, fire_count, created_at, user_id, view_count, tribe_id')
+        .select('id, content, fire_count, created_at, user_id, view_count, tribe_id, media_url, media_type')
         .order('hot_score', { ascending: false })
         .limit(backfillNeeded + 5);
 
@@ -140,8 +142,8 @@ const SocietyFeed = () => {
           is_hidden: false,
           visibility: 'public',
           target_tribe: null,
-          media_url: null,
-          media_type: null,
+          media_url: (p as any).media_url || null,
+          media_type: (p as any).media_type || null,
         }));
 
       const combined = [...validData, ...backfill];
@@ -591,9 +593,17 @@ const SocietyFeed = () => {
       <CreatePostModal
         isOpen={showCreateModal}
         onClose={() => { setShowCreateModal(false); setDefaultContent(undefined); }}
-        onPostCreated={() => { setShowCreateModal(false); setDefaultContent(undefined); handleRefresh(); }}
+        onPostCreated={() => {
+          setShowCreateModal(false);
+          setDefaultContent(undefined);
+          handleRefresh();
+          // Trigger feedback popup 2 seconds after successful post
+          setTimeout(() => setShowFeedback(true), 2000);
+        }}
         defaultContent={defaultContent}
       />
+
+      <FeedbackPopup isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
 
       <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
     </div>

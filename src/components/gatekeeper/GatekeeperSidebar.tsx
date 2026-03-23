@@ -16,7 +16,8 @@ import {
   Activity,
   Store,
   AlertTriangle,
-  Bug
+  Bug,
+  MessageSquareText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -85,6 +86,7 @@ const GatekeeperSidebar = ({
       { id: 'ads', label: 'Banners & Ads', icon: Sparkles },
       { id: 'student-shops', label: 'Student Shops', icon: Store },
       { id: 'activity', label: 'Activity', icon: Activity },
+      { id: 'feedback', label: 'Feedback', icon: MessageSquareText },
       { id: 'error-logs', label: 'Error Logs', icon: Bug },
       { id: 'settings', label: 'Settings', icon: Settings },
     ] : []),

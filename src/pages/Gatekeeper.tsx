@@ -21,6 +21,7 @@ import GatekeeperSidebar from '@/components/gatekeeper/GatekeeperSidebar';
 import StudentShopsAdmin from '@/components/gatekeeper/StudentShopsAdmin';
 import ModerationQueue from '@/components/gatekeeper/ModerationQueue';
 import ErrorLogsSection from '@/components/gatekeeper/ErrorLogsSection';
+import FeedbackSection from '@/components/gatekeeper/FeedbackSection';
 
 interface Member {
   id: string;
@@ -296,6 +297,8 @@ const Gatekeeper = () => {
         return <ModerationQueue />;
       case 'error-logs':
         return isSuperAdmin ? <ErrorLogsSection /> : null;
+      case 'feedback':
+        return isSuperAdmin ? <FeedbackSection /> : null;
       case 'settings':
         return isSuperAdmin ? <SettingsSection /> : null;
       default:
