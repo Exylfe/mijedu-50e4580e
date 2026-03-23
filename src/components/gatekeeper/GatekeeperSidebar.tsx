@@ -16,7 +16,8 @@ import {
   Activity,
   Store,
   AlertTriangle,
-  Bug
+  Bug,
+  MessageSquareText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
