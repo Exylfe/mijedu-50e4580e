@@ -10,6 +10,7 @@ import CreatePostModal from '@/components/CreatePostModal';
 import BannerCarousel from '@/components/BannerCarousel';
 import StoryTray from '@/components/StoryTray';
 import ImmersiveHeader from '@/components/ImmersiveHeader';
+import FeedbackPopup from '@/components/FeedbackPopup';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
