@@ -72,6 +72,7 @@ const SocietyFeed = () => {
   const [activeTab, setActiveTab] = useState<FeedTab>('following');
   const [hasFollowing, setHasFollowing] = useState(false);
   const [defaultContent, setDefaultContent] = useState<string | undefined>(undefined);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const canPost = isSuperAdmin || isAdmin || (profile?.is_verified && profile?.tribe_id);
 
