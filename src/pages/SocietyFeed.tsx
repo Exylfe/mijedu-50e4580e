@@ -592,9 +592,17 @@ const SocietyFeed = () => {
       <CreatePostModal
         isOpen={showCreateModal}
         onClose={() => { setShowCreateModal(false); setDefaultContent(undefined); }}
-        onPostCreated={() => { setShowCreateModal(false); setDefaultContent(undefined); handleRefresh(); }}
+        onPostCreated={() => {
+          setShowCreateModal(false);
+          setDefaultContent(undefined);
+          handleRefresh();
+          // Trigger feedback popup 2 seconds after successful post
+          setTimeout(() => setShowFeedback(true), 2000);
+        }}
         defaultContent={defaultContent}
       />
+
+      <FeedbackPopup isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
 
       <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
     </div>
