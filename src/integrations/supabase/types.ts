@@ -283,6 +283,36 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          category: string
+          context: string | null
+          created_at: string
+          id: string
+          message: string | null
+          rating: number | null
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          context?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          rating?: number | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          context?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          rating?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           actor_id: string | null
@@ -1175,6 +1205,8 @@ export type Database = {
           fire_count: number | null
           hot_score: number | null
           id: string | null
+          media_type: string | null
+          media_url: string | null
           tribe_id: string | null
           user_id: string | null
           view_count: number | null
