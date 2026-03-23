@@ -1,62 +1,80 @@
 
 
-# Pilot-Ready Hardening Plan
+# Pilot Stability & Feedback Plan
 
-## 1. Branding & Metadata
-Update `index.html`: title to "Mijedu - Student Super-App", OG tags with Mijedu branding, description "Your campus super-app for tribes, marketplace, and student life", add favicon reference to Mijedu logo. Remove all Lovable references.
+## Overview
+Three groups of changes: MediaUploader hardening, a hybrid feedback system, and fixing the Following feed to show media (images).
 
-## 2. MediaUploader Hardening (`src/components/MediaUploader.tsx`)
-- **Image compression**: Use `browser-image-compression` (already installed) to compress images before upload -- max width 1200px, quality 0.7, max size 2MB
-- **Full try-catch**: Wrap entire upload flow in try-catch with user-friendly toast messages for network errors, timeouts, and storage failures
-- **Blob URL cleanup**: Call `URL.revokeObjectURL()` on preview URLs when media is removed or component unmounts
-- **File path sanitization**: Already uses `replace(/[^a-zA-Z0-9.-]/g, '_')` and user-ID-based paths -- this is already good, no changes needed
+---
 
-## 3. Auth Redirect URLs
-Update 4 locations to use production domain `https://mijedu.vercel.app`:
-- `src/pages/Auth.tsx` line 114: `emailRedirectTo`
-- `src/pages/Auth.tsx` line 277: Google OAuth `redirectTo`
-- `src/pages/Auth.tsx` line 308: password reset `redirectTo`
-- `src/contexts/AuthContext.tsx` line 210: signUp `emailRedirectTo`
+## 1. MediaUploader Hardening
 
-Strategy: Use an environment variable `VITE_APP_URL` with fallback to `window.location.origin`, defaulting to `https://mijedu.vercel.app` in production.
+**File**: `src/components/MediaUploader.tsx`
 
-## 4. CreateAccountModal UX (`src/components/gatekeeper/CreateAccountModal.tsx`)
-- Already has loading state and spinner -- good
-- Add better error handling: detect "Failed to fetch" specifically and show "Connection error. Check your internet and try again." message
-- Disable the close button and form inputs while loading to prevent accidental dismissal
+Current state is already 80% there (compression, sanitization, try-catch, blob cleanup all exist). Changes needed:
 
-## 5. Error Dashboard
-Create an `error_logs` table in Supabase to capture client-side errors, and update `errorLogger.ts` to write errors there. Build a simple error viewer section in the Gatekeeper admin panel.
+- **EXIF orientation**: Already handled by `browser-image-compression` (it auto-corrects orientation by default). No code change needed.
+- **Remove 50MB pre-check**: Remove the early `MAX_FILE_SIZE_MB` check before compression. For images, let compression run first, then only error if upload fails. Keep the check for non-image files (video/audio/PDF).
+- **Better loading state**: Replace the small spinner with a full overlay message "Optimizing & Uploading..." on the attachment bar. Disable all labels during upload.
+- **Toast cleanup**: Remove "Compressing image..." info toast (unnecessary noise). Just show spinner.
 
-**Database migration**: Create `error_logs` table with columns: `id`, `created_at`, `user_id` (nullable), `error_type`, `error_message`, `context` (jsonb), `user_agent`, `url`.
+---
 
-**New component**: `src/components/gatekeeper/ErrorLogsSection.tsx` -- a simple table showing recent errors with filtering by type.
+## 2. Feedback System
 
-**Update errorLogger.ts**: Post errors to Supabase (fire-and-forget, never crash the app if logging fails). Include device info and current URL.
+### Database Migration
+Create `feedback` table:
+- `id` (uuid, PK)
+- `user_id` (uuid, not null)
+- `rating` (integer, 1-5)
+- `category` (text: 'bug_report', 'suggestion', 'experience')
+- `context` (text, page URL)
+- `message` (text, nullable)
+- `created_at` (timestamptz)
 
-## 6. Additional Issues Found
-- **Memory leaks**: Add cleanup for blob URLs in MediaUploader via `useEffect` return
-- **Toast import consistency**: Ensure all files use `sonner` toast (already consistent)
+RLS: authenticated users can insert their own; admins can read all.
+
+### New Component: `FeedbackPopup.tsx`
+- Small slide-up card with 5-star rating + optional message
+- Two header buttons: "Report a Bug" / "Give Suggestion" that pre-set category
+- Auto-captures `user_id` and `window.location.pathname`
+- Triggered via context or callback
+
+### Integration
+- In `CreatePostModal.tsx`: after successful post creation, wait 2 seconds then trigger feedback popup
+- In `MediaUploader.tsx`: after successful upload, trigger feedback popup
+- Add `FeedbackPopup` to the app layout (in `App.tsx` or `SocietyFeed.tsx`)
+
+### Gatekeeper Integration
+Add a "Feedback" section to the Gatekeeper admin panel to view submitted feedback.
+
+---
+
+## 3. Fix Following Feed Missing Media
+
+**Root cause**: The `hot_posts` view doesn't include `media_url` or `media_type`. When the Following feed backfills with hot_posts (lines 134-145 in SocietyFeed.tsx), it hardcodes `media_url: null`.
+
+**Fix**:
+1. **Database**: Recreate the `hot_posts` view to include `p.media_url` and `p.media_type`
+2. **SocietyFeed.tsx**: Update the backfill mapping (lines 137-145) to use the actual `media_url` and `media_type` from hot_posts data instead of hardcoding null. Also update the `.select()` on line 130 to include these columns.
 
 ---
 
 ## Technical Details
 
 **Files to modify:**
-- `index.html` -- metadata
-- `.env` -- add `VITE_APP_URL=https://mijedu.vercel.app`
-- `src/components/MediaUploader.tsx` -- compression, try-catch, blob cleanup
-- `src/pages/Auth.tsx` -- redirect URLs
-- `src/contexts/AuthContext.tsx` -- redirect URL
-- `src/components/gatekeeper/CreateAccountModal.tsx` -- error messaging
-- `src/utils/errorLogger.ts` -- write to Supabase
-- `src/pages/Gatekeeper.tsx` -- add error logs tab
+- `src/components/MediaUploader.tsx` -- loading state, remove pre-check for images
+- `src/pages/SocietyFeed.tsx` -- backfill media fix, feedback trigger
+- `src/pages/Gatekeeper.tsx` -- add feedback tab
+- `src/components/gatekeeper/GatekeeperSidebar.tsx` -- add feedback nav item
 
 **New files:**
-- `src/components/gatekeeper/ErrorLogsSection.tsx`
+- `src/components/FeedbackPopup.tsx`
+- `src/components/gatekeeper/FeedbackSection.tsx`
 
 **Database migration:**
-- Create `error_logs` table with RLS (admins can read, anyone authenticated can insert)
+- Recreate `hot_posts` view with media columns
+- Create `feedback` table with RLS
 
-**No new dependencies needed** -- `browser-image-compression` is already in `package.json`.
+**No new dependencies needed.**
 
