@@ -78,7 +78,9 @@ const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }:
       return;
     }
 
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+    // For images, skip pre-check — compression will handle large files
+    // For non-image files, enforce the size limit
+    if (mediaCategory !== 'image' && file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
       toast.error(`File too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`);
       return;
     }
@@ -89,7 +91,6 @@ const MediaUploader = ({ onMediaUploaded, onMediaRemoved, mediaUrl, mediaType }:
       // Compress images before upload
       let fileToUpload: File = file;
       if (mediaCategory === 'image') {
-        toast.info('Compressing image…');
         fileToUpload = await compressImage(file);
       }
 
