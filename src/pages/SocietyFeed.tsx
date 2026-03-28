@@ -447,10 +447,6 @@ const SocietyFeed = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24" onClick={handleContentTap}>
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[100px]" />
-      </div>
 
       <ImmersiveHeader title="Global Bwalo" subtitle="Public Feed" isVisible={isVisible} onRefresh={handleRefresh} />
       <div className="h-16" />
@@ -484,7 +480,7 @@ const SocietyFeed = () => {
                   setDefaultContent(item.template);
                   setShowCreateModal(true);
                 }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-muted/50 border border-border/50 text-xs font-medium text-foreground hover:bg-primary/10 hover:border-primary/30 transition-all shrink-0"
+                className="flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-full bg-muted/50 border border-border/50 text-xs font-medium text-foreground hover:bg-primary/10 hover:border-primary/30 transition-all shrink-0"
               >
                 {item.label}
               </button>

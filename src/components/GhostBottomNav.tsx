@@ -46,7 +46,7 @@ const GhostBottomNav = ({ activeItem, onItemClick, isVisible }: GhostBottomNavPr
                   key={item.id}
                   onClick={() => onItemClick(item.id)}
                   whileTap={{ scale: 0.9 }}
-                  className="relative flex flex-col items-center gap-1 px-4 py-2"
+                  className="relative flex flex-col items-center gap-1 px-4 py-2 min-h-[44px] min-w-[44px]"
                 >
                   {/* Ghost glow effect for active item */}
                   {isActive && (

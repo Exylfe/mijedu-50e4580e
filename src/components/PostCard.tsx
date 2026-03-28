@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
  import { Flag, AlertTriangle, MessageSquarePlus, Lock, MessageCircle, Radio, Share2, MoreHorizontal, EyeOff, Eye, Pin, PinOff, LockKeyhole, Unlock, Minimize2, Trash2 } from 'lucide-react';
@@ -115,29 +115,37 @@ const PostCard = ({ post, index, userReactions, onReactionChange, showModeration
     && post.fire_count >= ENGAGEMENT_THRESHOLD
     && (!isPrivatePost || !post.target_tribe || post.target_tribe === profile?.tribe);
   const [viewTracked, setViewTracked] = useState(false);
+  const cardRef = React.useRef<HTMLDivElement>(null);
 
-  // Track post view (only once per session per post)
+  // Track post view using IntersectionObserver (only when visible on screen)
   useEffect(() => {
-    if (viewTracked || !post.id) return;
-    
-    const trackView = async () => {
-      try {
-        await supabase
-          .from('post_views')
-          .insert({
-            post_id: post.id,
-            user_id: user?.id,
-            viewer_tribe: profile?.tribe || null
-          });
-      } catch (err) {
-        console.error('View tracking failed:', err);
-      }
-      setViewTracked(true);
-    };
-    
-    // Small delay to ensure post is actually viewed
-    const timer = setTimeout(trackView, 1000);
-    return () => clearTimeout(timer);
+    if (viewTracked || !post.id || !cardRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          const timer = setTimeout(async () => {
+            try {
+              await supabase
+                .from('post_views')
+                .insert({
+                  post_id: post.id,
+                  user_id: user?.id,
+                  viewer_tribe: profile?.tribe || null
+                });
+            } catch (err) {
+              // silent fail for view tracking
+            }
+            setViewTracked(true);
+          }, 1500);
+          return () => clearTimeout(timer);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
   }, [post.id, viewTracked, profile?.tribe]);
 
   // Check for active room on this post
@@ -325,6 +333,7 @@ const PostCard = ({ post, index, userReactions, onReactionChange, showModeration
 
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
@@ -478,10 +487,10 @@ const PostCard = ({ post, index, userReactions, onReactionChange, showModeration
              disabled={isReacting}
            />
 
-          {/* Comment button */}
+           {/* Comment button */}
           <button
             onClick={() => setShowComments(!showComments)}
-             className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${
+             className={`flex items-center gap-2 px-3 py-2 min-h-[44px] min-w-[44px] rounded-full transition-all ${
               showComments 
                  ? 'bg-primary/15 text-primary' 
                  : 'bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary'
@@ -494,7 +503,7 @@ const PostCard = ({ post, index, userReactions, onReactionChange, showModeration
            {/* Share button */}
            <button
              onClick={handleShare}
-             className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 text-muted-foreground hover:bg-muted transition-all"
+             className="flex items-center gap-2 px-3 py-2 min-h-[44px] min-w-[44px] rounded-full bg-muted/50 text-muted-foreground hover:bg-muted transition-all"
            >
              <Share2 className="w-5 h-5" />
           </button>

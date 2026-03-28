@@ -223,11 +223,6 @@ const Market = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24" onClick={handleContentTap}>
-      {/* Background effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[100px]" />
-      </div>
 
       <ImmersiveHeader title="Bwalo Market" subtitle="Exclusive student deals" isVisible={isVisible} />
       <div className="h-16" />
@@ -247,7 +242,7 @@ const Market = () => {
         <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
           <button
             onClick={() => setSelectedCategory('all')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-full text-sm font-medium whitespace-nowrap transition-all ${
               selectedCategory === 'all'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted/50 text-muted-foreground hover:bg-muted'
@@ -262,7 +257,7 @@ const Market = () => {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                className={`flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                   selectedCategory === cat.id
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted/50 text-muted-foreground hover:bg-muted'
@@ -374,7 +369,7 @@ const Market = () => {
             <p className="text-muted-foreground text-sm">Partner shops will add products soon!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             {filteredProducts.map((product, index) => (
               <motion.div
                 key={product.id}

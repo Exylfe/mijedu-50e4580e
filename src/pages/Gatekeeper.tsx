@@ -308,10 +308,6 @@ const Gatekeeper = () => {
 
   return (
     <div className="min-h-screen bg-background pb-32">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-secondary/5 rounded-full blur-[80px]" />
-      </div>
 
       <GatekeeperSidebar
         activeSection={activeSection}
@@ -348,7 +344,7 @@ const Gatekeeper = () => {
         </div>
       </header>
 
-      <main className="px-4 py-4">
+      <main className="px-4 py-4 overflow-x-hidden">
         <motion.div key={activeSection} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
           {renderSection()}
         </motion.div>
