@@ -88,7 +88,7 @@ const Settings = () => {
           <TabsList className={`w-full bg-muted/50 p-1 rounded-xl mb-6 overflow-x-auto scrollbar-hide ${hasApprovedShop ? 'grid grid-cols-3' : ''}`}>
             <TabsTrigger 
               value="profile" 
-              className="flex-1 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="flex-1 min-h-[44px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
               {isVipBrand ? (
                 <Building2 className="w-4 h-4 mr-2" />
