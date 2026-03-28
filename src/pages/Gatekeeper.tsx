@@ -344,7 +344,7 @@ const Gatekeeper = () => {
         </div>
       </header>
 
-      <main className="px-4 py-4">
+      <main className="px-4 py-4 overflow-x-hidden">
         <motion.div key={activeSection} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
           {renderSection()}
         </motion.div>

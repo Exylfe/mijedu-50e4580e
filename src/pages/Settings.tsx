@@ -107,7 +107,7 @@ const Settings = () => {
             {hasApprovedShop && (
               <TabsTrigger 
                 value="shop" 
-                className="flex-1 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                className="flex-1 min-h-[44px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
               >
                 <Store className="w-4 h-4 mr-2" />
                 My Shop

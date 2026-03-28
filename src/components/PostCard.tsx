@@ -487,10 +487,10 @@ const PostCard = ({ post, index, userReactions, onReactionChange, showModeration
              disabled={isReacting}
            />
 
-          {/* Comment button */}
+           {/* Comment button */}
           <button
             onClick={() => setShowComments(!showComments)}
-             className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${
+             className={`flex items-center gap-2 px-3 py-2 min-h-[44px] min-w-[44px] rounded-full transition-all ${
               showComments 
                  ? 'bg-primary/15 text-primary' 
                  : 'bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary'
@@ -503,7 +503,7 @@ const PostCard = ({ post, index, userReactions, onReactionChange, showModeration
            {/* Share button */}
            <button
              onClick={handleShare}
-             className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 text-muted-foreground hover:bg-muted transition-all"
+             className="flex items-center gap-2 px-3 py-2 min-h-[44px] min-w-[44px] rounded-full bg-muted/50 text-muted-foreground hover:bg-muted transition-all"
            >
              <Share2 className="w-5 h-5" />
           </button>

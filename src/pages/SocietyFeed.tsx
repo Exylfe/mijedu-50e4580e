@@ -480,7 +480,7 @@ const SocietyFeed = () => {
                   setDefaultContent(item.template);
                   setShowCreateModal(true);
                 }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-muted/50 border border-border/50 text-xs font-medium text-foreground hover:bg-primary/10 hover:border-primary/30 transition-all shrink-0"
+                className="flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-full bg-muted/50 border border-border/50 text-xs font-medium text-foreground hover:bg-primary/10 hover:border-primary/30 transition-all shrink-0"
               >
                 {item.label}
               </button>

@@ -369,7 +369,7 @@ const Market = () => {
             <p className="text-muted-foreground text-sm">Partner shops will add products soon!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             {filteredProducts.map((product, index) => (
               <motion.div
                 key={product.id}
