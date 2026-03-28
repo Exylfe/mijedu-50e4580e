@@ -242,7 +242,7 @@ const Market = () => {
         <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
           <button
             onClick={() => setSelectedCategory('all')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-full text-sm font-medium whitespace-nowrap transition-all ${
               selectedCategory === 'all'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted/50 text-muted-foreground hover:bg-muted'
