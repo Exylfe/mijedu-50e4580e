@@ -99,7 +99,7 @@ const Settings = () => {
             </TabsTrigger>
             <TabsTrigger 
               value="security" 
-              className="flex-1 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="flex-1 min-h-[44px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
               <Lock className="w-4 h-4 mr-2" />
               Security
