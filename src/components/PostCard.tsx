@@ -115,29 +115,37 @@ const PostCard = ({ post, index, userReactions, onReactionChange, showModeration
     && post.fire_count >= ENGAGEMENT_THRESHOLD
     && (!isPrivatePost || !post.target_tribe || post.target_tribe === profile?.tribe);
   const [viewTracked, setViewTracked] = useState(false);
+  const cardRef = React.useRef<HTMLDivElement>(null);
 
-  // Track post view (only once per session per post)
+  // Track post view using IntersectionObserver (only when visible on screen)
   useEffect(() => {
-    if (viewTracked || !post.id) return;
-    
-    const trackView = async () => {
-      try {
-        await supabase
-          .from('post_views')
-          .insert({
-            post_id: post.id,
-            user_id: user?.id,
-            viewer_tribe: profile?.tribe || null
-          });
-      } catch (err) {
-        console.error('View tracking failed:', err);
-      }
-      setViewTracked(true);
-    };
-    
-    // Small delay to ensure post is actually viewed
-    const timer = setTimeout(trackView, 1000);
-    return () => clearTimeout(timer);
+    if (viewTracked || !post.id || !cardRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          const timer = setTimeout(async () => {
+            try {
+              await supabase
+                .from('post_views')
+                .insert({
+                  post_id: post.id,
+                  user_id: user?.id,
+                  viewer_tribe: profile?.tribe || null
+                });
+            } catch (err) {
+              // silent fail for view tracking
+            }
+            setViewTracked(true);
+          }, 1500);
+          return () => clearTimeout(timer);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
   }, [post.id, viewTracked, profile?.tribe]);
 
   // Check for active room on this post
