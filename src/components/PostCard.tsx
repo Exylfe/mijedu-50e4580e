@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
  import { Flag, AlertTriangle, MessageSquarePlus, Lock, MessageCircle, Radio, Share2, MoreHorizontal, EyeOff, Eye, Pin, PinOff, LockKeyhole, Unlock, Minimize2, Trash2 } from 'lucide-react';
