@@ -4,7 +4,7 @@ import { Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSimulatedAuth } from '@/hooks/useSimulatedAuth';
-import GhostBottomNav from '@/components/GhostBottomNav';
+import { FeedSkeleton } from '@/components/FeedSkeleton';
 import PostCard from '@/components/PostCard';
 import CreatePostModal from '@/components/CreatePostModal';
 import ImmersiveHeader from '@/components/ImmersiveHeader';
@@ -312,9 +312,7 @@ const TribeFeed = () => {
       {/* Posts */}
       <div className="px-4 py-6 space-y-4">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
+          <FeedSkeleton count={3} />
         ) : posts.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -407,7 +405,7 @@ const TribeFeed = () => {
         </motion.button>
       )}
 
-      <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
+      
 
       <CreatePostModal
         isOpen={showCreateModal}

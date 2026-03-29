@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Store, Search, ShoppingBag, BadgeCheck, Star, Ban, Sparkles, Filter, Laptop, Home, Book, Shirt, Heart, Pencil, UtensilsCrossed, Wrench, Gamepad2, Dumbbell, BookOpen, Watch } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import GhostBottomNav from '@/components/GhostBottomNav';
+import { MarketSkeleton } from '@/components/FeedSkeleton';
 import ImmersiveHeader from '@/components/ImmersiveHeader';
 import { useScrollVisibility } from '@/hooks/useScrollVisibility';
 import { Input } from '@/components/ui/input';
@@ -359,9 +359,7 @@ const Market = () => {
         </h2>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
+          <MarketSkeleton count={4} />
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -447,7 +445,7 @@ const Market = () => {
         )}
       </div>
 
-      <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
+      
 
       <ProductDetailModal
         product={selectedProduct}

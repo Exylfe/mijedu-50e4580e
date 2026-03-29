@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Users, Plus, Building2, Store, HelpCircle, BookOpen, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSimulatedAuth } from '@/hooks/useSimulatedAuth';
-import GhostBottomNav from '@/components/GhostBottomNav';
+import { FeedSkeleton } from '@/components/FeedSkeleton';
 import PostCard from '@/components/PostCard';
 import SponsoredPost from '@/components/SponsoredPost';
 import CreatePostModal from '@/components/CreatePostModal';
@@ -530,9 +530,7 @@ const SocietyFeed = () => {
 
       <div className="px-4 py-6 space-y-4">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
+          <FeedSkeleton count={3} />
         ) : posts.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
@@ -601,7 +599,7 @@ const SocietyFeed = () => {
 
       <FeedbackPopup isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
 
-      <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
+      
     </div>
   );
 };

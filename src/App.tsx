@@ -12,6 +12,8 @@ import { InteractionFeedbackProvider } from "@/components/InteractionFeedback";
 import MaintenanceScreen from "@/components/MaintenanceScreen";
 import ViewAsSimulator from "@/components/ViewAsSimulator";
 import PendingVerificationOverlay from "@/components/PendingVerificationOverlay";
+import NetworkStatus from "@/components/NetworkStatus";
+import MobileAppShell from "@/components/MobileAppShell";
 import Auth from "./pages/Auth";
 import SocietyFeed from "./pages/SocietyFeed";
 import Gatekeeper from "./pages/Gatekeeper";
@@ -46,7 +48,16 @@ import ShopOffice from "./pages/ShopOffice";
 import TribePending from "./pages/TribePending";
 import PostManagement from "./pages/PostManagement";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    },
+  },
+});
 
 // Root route: authenticated → /feed, otherwise → /auth
 const RootRedirect = () => {
@@ -169,104 +180,22 @@ const AppRoutes = () => {
           </AuthRoute>
         }
       />
-      <Route
-        path="/feed"
-        element={
-          <ProtectedRoute>
-            <SocietyFeed />
-          </ProtectedRoute>
-        }
-      />
-      {/* Legacy /pending route redirects to /feed (overlay handles it now) */}
+      {/* Main pages wrapped in MobileAppShell for persistent bottom nav */}
+      <Route element={<ProtectedRoute><MobileAppShell /></ProtectedRoute>}>
+        <Route path="/feed" element={<SocietyFeed />} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/tribe-feed" element={<TribeFeed />} />
+        <Route path="/market" element={<Market />} />
+        <Route path="/settings" element={<Settings />} />
+      </Route>
       <Route path="/pending" element={<TribePending />} />
-      <Route
-        path="/gatekeeper"
-        element={
-          <AdminRoute>
-            <Gatekeeper />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/market"
-        element={
-          <ProtectedRoute>
-            <Market />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tribe-feed"
-        element={
-          <ProtectedRoute>
-            <TribeFeed />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/rooms"
-        element={
-          <ProtectedRoute>
-            <Rooms />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/room/:roomId"
-        element={
-          <ProtectedRoute>
-            <RoomChat />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/business"
-        element={
-          <ProtectedRoute>
-            <BusinessDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/explore"
-        element={
-          <ProtectedRoute>
-            <Explore />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tribe/:id"
-        element={
-          <ProtectedRoute>
-            <TribePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/brand/:id"
-        element={
-          <ProtectedRoute>
-            <BrandPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/about"
-        element={
-          <ProtectedRoute>
-            <About />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/gatekeeper" element={<AdminRoute><Gatekeeper /></AdminRoute>} />
+      <Route path="/rooms" element={<ProtectedRoute><Rooms /></ProtectedRoute>} />
+      <Route path="/room/:roomId" element={<ProtectedRoute><RoomChat /></ProtectedRoute>} />
+      <Route path="/business" element={<ProtectedRoute><BusinessDashboard /></ProtectedRoute>} />
+      <Route path="/tribe/:id" element={<ProtectedRoute><TribePage /></ProtectedRoute>} />
+      <Route path="/brand/:id" element={<ProtectedRoute><BrandPage /></ProtectedRoute>} />
+      <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
       <Route
         path="/admin/simulator"
         element={
@@ -365,6 +294,7 @@ const App = () => (
                 <ViewAsSimulator />
                 <OnboardingNotification />
                 <ProfileCardOverlay />
+                <NetworkStatus />
                 <AppRoutes />
               </InteractionFeedbackProvider>
             </ProfileCardProvider>

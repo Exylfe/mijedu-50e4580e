@@ -140,11 +140,6 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Background effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-neon-purple/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-neon-pink/10 rounded-full blur-[100px]" />
-      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -153,9 +148,8 @@ const Auth = () => {
       >
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <AdaptiveLogo size="w-20 h-20" className="mb-4" />
-          <h1 className="text-3xl font-bold gradient-text">Mijedu</h1>
-          <p className="text-muted-foreground text-sm mt-2">
+          <AdaptiveLogo size="w-28 h-28" className="mb-4" />
+          <p className="text-muted-foreground text-sm mt-1">
             {isLogin ? 'Welcome back to your tribe' : 'Join the movement'}
           </p>
         </div>

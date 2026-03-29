@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, Building2, Store, ChevronRight, Users, Flame, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import GhostBottomNav from '@/components/GhostBottomNav';
+import { ExploreSkeleton } from '@/components/FeedSkeleton';
 import ImmersiveHeader from '@/components/ImmersiveHeader';
 import { useScrollVisibility } from '@/hooks/useScrollVisibility';
 
@@ -289,7 +289,7 @@ const Explore = () => {
         ))}
       </div>
 
-      <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
+      
     </div>
   );
 };
