@@ -445,7 +445,7 @@ const Market = () => {
         )}
       </div>
 
-      <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
+      
 
       <ProductDetailModal
         product={selectedProduct}

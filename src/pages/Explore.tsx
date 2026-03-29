@@ -289,7 +289,7 @@ const Explore = () => {
         ))}
       </div>
 
-      <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
+      
     </div>
   );
 };

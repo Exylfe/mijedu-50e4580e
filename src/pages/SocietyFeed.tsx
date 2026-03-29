@@ -599,7 +599,7 @@ const SocietyFeed = () => {
 
       <FeedbackPopup isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
 
-      <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
+      
     </div>
   );
 };

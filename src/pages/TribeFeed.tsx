@@ -405,7 +405,7 @@ const TribeFeed = () => {
         </motion.button>
       )}
 
-      <GhostBottomNav activeItem={activeNav} onItemClick={handleNavClick} isVisible={isVisible} />
+      
 
       <CreatePostModal
         isOpen={showCreateModal}

@@ -294,6 +294,7 @@ const App = () => (
                 <ViewAsSimulator />
                 <OnboardingNotification />
                 <ProfileCardOverlay />
+                <NetworkStatus />
                 <AppRoutes />
               </InteractionFeedbackProvider>
             </ProfileCardProvider>
