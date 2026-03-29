@@ -49,7 +49,16 @@ import ShopOffice from "./pages/ShopOffice";
 import TribePending from "./pages/TribePending";
 import PostManagement from "./pages/PostManagement";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    },
+  },
+});
 
 // Root route: authenticated → /feed, otherwise → /auth
 const RootRedirect = () => {
