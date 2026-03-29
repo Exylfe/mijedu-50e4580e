@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Store, Search, ShoppingBag, BadgeCheck, Star, Ban, Sparkles, Filter, Laptop, Home, Book, Shirt, Heart, Pencil, UtensilsCrossed, Wrench, Gamepad2, Dumbbell, BookOpen, Watch } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import GhostBottomNav from '@/components/GhostBottomNav';
+import { MarketSkeleton } from '@/components/FeedSkeleton';
 import ImmersiveHeader from '@/components/ImmersiveHeader';
 import { useScrollVisibility } from '@/hooks/useScrollVisibility';
 import { Input } from '@/components/ui/input';
