@@ -187,71 +187,14 @@ const AppRoutes = () => {
         <Route path="/tribe-feed" element={<TribeFeed />} />
         <Route path="/market" element={<Market />} />
         <Route path="/settings" element={<Settings />} />
-      </Route>
-      <Route
-        path="/rooms"
-        element={
-          <ProtectedRoute>
-            <Rooms />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/room/:roomId"
-        element={
-          <ProtectedRoute>
-            <RoomChat />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/business"
-        element={
-          <ProtectedRoute>
-            <BusinessDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/explore"
-        element={
-          <ProtectedRoute>
-            <Explore />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tribe/:id"
-        element={
-          <ProtectedRoute>
-            <TribePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/brand/:id"
-        element={
-          <ProtectedRoute>
-            <BrandPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/about"
-        element={
-          <ProtectedRoute>
-            <About />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/pending" element={<TribePending />} />
+      <Route path="/gatekeeper" element={<AdminRoute><Gatekeeper /></AdminRoute>} />
+      <Route path="/rooms" element={<ProtectedRoute><Rooms /></ProtectedRoute>} />
+      <Route path="/room/:roomId" element={<ProtectedRoute><RoomChat /></ProtectedRoute>} />
+      <Route path="/business" element={<ProtectedRoute><BusinessDashboard /></ProtectedRoute>} />
+      <Route path="/tribe/:id" element={<ProtectedRoute><TribePage /></ProtectedRoute>} />
+      <Route path="/brand/:id" element={<ProtectedRoute><BrandPage /></ProtectedRoute>} />
+      <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
       <Route
         path="/admin/simulator"
         element={
