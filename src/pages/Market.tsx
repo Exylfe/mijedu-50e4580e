@@ -359,9 +359,7 @@ const Market = () => {
         </h2>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
+          <MarketSkeleton count={4} />
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
