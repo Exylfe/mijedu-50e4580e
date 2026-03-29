@@ -84,6 +84,14 @@
 
   html {
     scroll-behavior: smooth;
+    overscroll-behavior-y: contain;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    touch-action: manipulation;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
