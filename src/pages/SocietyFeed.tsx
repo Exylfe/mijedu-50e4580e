@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Users, Plus, Building2, Store, HelpCircle, BookOpen, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSimulatedAuth } from '@/hooks/useSimulatedAuth';
-import GhostBottomNav from '@/components/GhostBottomNav';
+import { FeedSkeleton } from '@/components/FeedSkeleton';
 import PostCard from '@/components/PostCard';
 import SponsoredPost from '@/components/SponsoredPost';
 import CreatePostModal from '@/components/CreatePostModal';
