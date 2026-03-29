@@ -1,142 +1,118 @@
 
 
-# Mobile Optimization & Capacitor Readiness Plan
+# Mobile-Native App Experience Enhancement
 
-## Audit Answers
-
-1. **Framework**: React 18 + Vite 5 + TypeScript
-2. **Build**: `vite build` → outputs to `dist/`
-3. **API calls**: All use Supabase JS client with absolute URLs (`https://abgvndknznaensqcahls.supabase.co`) -- no localhost references in app code
-4. **Auth**: Supabase Auth (JWT, persisted in localStorage, auto-refresh)
-5. **Responsive design**: Partially -- uses Tailwind responsive classes, mobile-first bottom nav, but several pages (Gatekeeper, Market tables, Settings tabs) have desktop assumptions
-6. **Heavy components**: `framer-motion` on every page, `recharts` (Gatekeeper analytics), `PostCard` tracks views per-render (N+1 queries), 638-line PostCard component
-7. **PWA**: None -- no manifest, no service worker
-8. **Browser-only APIs**: `localStorage` (works in WebView), no camera/geolocation/push APIs used
-9. **State management**: React Context (AuthContext, ViewAsContext, ProfileCardContext) + TanStack Query
-10. **Main pages**: Auth, SocietyFeed, TribeFeed, Explore, Market, Gatekeeper, Settings, ProfilePage, Rooms/RoomChat, BrandHub, ShopOffice, Leaderboard
+## Overview
+Five areas: persistent bottom nav with fast switching, skeleton loaders, network resilience, session hardening, and Auth page logo fix. No backend changes.
 
 ---
 
-## PHASE 1: Mobile Readiness Issues Found
+## 1. Auth Page Logo Fix
+**File**: `src/pages/Auth.tsx`
 
-### HIGH Impact
-1. **PostCard.tsx (638 lines)** -- fires a `post_views` INSERT on every render with a 1-second timer. On a feed of 20 posts, that's 20 DB writes on load. On low-end phones this causes lag.
-2. **Gatekeeper tables** -- `MembersSection` renders all members in a single list with no virtualization. On 200+ students this will lag on mobile.
-3. **Background blur effects** -- Every page has `blur-[120px]` divs. These are GPU-heavy on low-end Android devices and cause jank.
-4. **CreatePostModal.tsx (588 lines)** -- inline image compression logic duplicated from MediaUploader; large component.
-
-### MEDIUM Impact
-5. **Settings TabsList** -- horizontal tabs overflow on narrow screens when 4+ tabs are shown (Profile, Brand, Security, Shop).
-6. **Market product grid** -- `grid-cols-2` with no `gap` adjustment for very small screens (< 360px). Product cards have nested badges that overflow.
-7. **Touch targets** -- category filter buttons in Market use `px-3 py-1.5` (approx 32px height), below the 44px minimum.
-8. **PostCard action buttons** -- icon buttons have no explicit min-height/width, relying on icon size alone (~24px).
-
-### LOW Impact
-9. **Guided posting prompt bar** in SocietyFeed -- horizontal scroll with no scroll snap, buttons are small.
-10. **Background gradient divs** add unnecessary DOM nodes on every page.
+- Remove the `<h1>Mijedu</h1>` text (line 157)
+- Increase logo from `w-20 h-20` to `w-28 h-28`
+- Remove GPU-heavy `blur-[120px]` background divs (lines 144-147)
 
 ---
 
-## PHASE 2: Mobile-First Refactor
+## 2. Bottom Navigation -- Persistent Tab System
+**File**: `src/App.tsx`
 
-### 1. Remove heavy blur backgrounds (all pages)
-Replace `blur-[120px]` decorative divs with simple CSS gradients or remove entirely. This alone will fix most Android lag.
+Currently each page (SocietyFeed, TribeFeed, Market, Explore) has its own `GhostBottomNav` that navigates via `react-router-dom`, causing full page reloads and state loss.
 
-**Files**: `SocietyFeed.tsx`, `Market.tsx`, `Gatekeeper.tsx`, `Index.tsx`, `Explore.tsx`, `TribeFeed.tsx`
+**Approach**: Create a shared layout component `MobileAppShell.tsx` that wraps all main pages:
+- Renders a single persistent `BottomNav` at the bottom
+- Uses React Router `<Outlet>` for page content
+- Highlights the active tab based on current route
+- Navigation uses `navigate()` -- React Router handles this without full reloads (SPA)
 
-### 2. Optimize PostCard view tracking
-Wrap the `post_views` insert in an `IntersectionObserver` so it only fires when the post is actually visible, and batch/debounce the inserts. Use a session-level Set to avoid duplicate tracking.
+**New file**: `src/components/MobileAppShell.tsx`
+- Wraps Feed, Explore, TribeFeed, Market, ProfilePage with a shared bottom nav
+- Maps routes to nav items: `/feed` → home, `/explore` → discover, `/tribe-feed` → chat, `/market` → market
+- Add a 5th "Profile" tab with User icon
 
-**File**: `PostCard.tsx`
+**Update**: `src/App.tsx` -- wrap the 4 main routes in a `<Route element={<MobileAppShell />}>` layout route so they share the shell without remounting the nav.
 
-### 3. Fix touch targets
-Add `min-h-[44px] min-w-[44px]` to all interactive elements: Market category filters, PostCard action buttons, Settings tabs, guided posting prompts.
-
-**Files**: `Market.tsx`, `PostCard.tsx`, `SocietyFeed.tsx`, `Settings.tsx`
-
-### 4. Settings tabs -- make scrollable on mobile
-Convert `TabsList` to horizontal scroll with `overflow-x-auto` and `scrollbar-hide` for small screens.
-
-**File**: `Settings.tsx`
-
-### 5. Market grid -- responsive columns
-Change to `grid-cols-1 sm:grid-cols-2` for very small screens, ensure badges don't overflow.
-
-**File**: `Market.tsx`
-
-### 6. Simplify Gatekeeper for mobile
-The sidebar already uses a Sheet pattern. Ensure the main content area doesn't overflow horizontally. Add `overflow-x-hidden` to the main container.
-
-**File**: `Gatekeeper.tsx`
+**Remove**: Individual `GhostBottomNav` from `SocietyFeed.tsx`, `TribeFeed.tsx`, `Market.tsx`, `Explore.tsx` (they'll use the shell's nav instead).
 
 ---
 
-## PHASE 3: PWA Preparation (Installability Only)
+## 3. Skeleton Loaders
+**New file**: `src/components/FeedSkeleton.tsx`
+- 3 skeleton cards matching PostCard layout: avatar circle, title bar, content lines, action buttons row
+- Uses existing `Skeleton` component from `src/components/ui/skeleton.tsx`
 
-Per project constraints, we will NOT add a service worker or `vite-plugin-pwa`. Instead, we'll add a simple `manifest.json` for installability (Add to Home Screen).
+**Apply in**:
+- `SocietyFeed.tsx` -- replace spinner (line 533-535) with `<FeedSkeleton />`
+- `TribeFeed.tsx` -- replace spinner with `<FeedSkeleton />`
+- `Market.tsx` -- add product card skeletons (image rectangle + text lines)
+- `Explore.tsx` -- add tribe/brand card skeletons
 
-### 1. Create `public/manifest.json`
-```json
-{
-  "name": "Mijedu - Student Super-App",
-  "short_name": "Mijedu",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#7c3aed",
-  "icons": [
-    { "src": "/mijedu-logo.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/mijedu-logo.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}
+---
+
+## 4. Network Resilience
+**File**: `src/App.tsx` -- update QueryClient config
+
+Add retry and stale time defaults:
+```typescript
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+      staleTime: 5 * 60 * 1000, // 5 min cache
+      gcTime: 10 * 60 * 1000,
+    },
+  },
+});
 ```
 
-### 2. Add manifest link + mobile meta tags to `index.html`
-- `<link rel="manifest" href="/manifest.json">`
-- `<meta name="theme-color" content="#7c3aed">`
-- `<meta name="apple-mobile-web-app-capable" content="yes">`
-- `<meta name="apple-mobile-web-app-status-bar-style" content="default">`
-- `<link rel="apple-touch-icon" href="/mijedu-logo.png">`
+**New component**: `src/components/NetworkStatus.tsx`
+- Listens to `window.online`/`offline` events
+- Shows a small banner "You're offline" at top when disconnected
+- Auto-dismisses when back online
 
-### 3. Generate proper 192x192 and 512x512 PWA icons
-Create properly sized icon files in `public/`.
+**Add to** `App.tsx` inside providers.
 
----
-
-## PHASE 4: Capacitor Readiness
-
-### 1. Build output
-Already correct: `vite build` outputs to `dist/`. No changes needed.
-
-### 2. API URLs
-All API calls go through Supabase JS client with absolute URLs. No localhost references. Ready for WebView.
-
-### 3. Auth persistence
-Uses `localStorage` which works in WebView. Supabase client configured with `persistSession: true` and `autoRefreshToken: true`. Ready.
-
-### 4. Incompatible dependencies
-None found. All dependencies are web-standard. `framer-motion` works in WebView. `vaul` (drawer) works in WebView.
-
-### 5. Add Capacitor config preparation
-Document the Capacitor setup steps but do NOT install Capacitor packages yet (user should do this after export to GitHub). Add a note in the codebase.
+**Update feed pages**: Add try-catch with user-friendly toast on fetch errors (replace `console.error` with `toast.error('Could not load posts. Pull to refresh.')`).
 
 ---
 
-## Implementation Summary
+## 5. Session Persistence
+**File**: `src/contexts/AuthContext.tsx`
 
-**Files to modify** (11):
-- `index.html` -- PWA meta tags + manifest link
-- `src/pages/SocietyFeed.tsx` -- remove blur divs
-- `src/pages/Market.tsx` -- fix grid, touch targets, remove blur
-- `src/pages/Gatekeeper.tsx` -- remove blur, overflow fix
-- `src/pages/Index.tsx` -- remove blur
-- `src/pages/Explore.tsx` -- remove blur
-- `src/pages/Settings.tsx` -- scrollable tabs, touch targets
-- `src/components/PostCard.tsx` -- optimize view tracking with IntersectionObserver
-- `src/components/GhostBottomNav.tsx` -- ensure 44px touch targets
+Already uses Supabase with `persistSession: true` and `autoRefreshToken: true` -- this is correct. Verify the `onAuthStateChange` listener handles `TOKEN_REFRESHED` events (it does via the existing listener). No changes needed unless the listener is missing.
 
-**Files to create** (1):
-- `public/manifest.json`
+Add one safety measure: on app mount, call `supabase.auth.getSession()` to restore from localStorage immediately (verify this exists).
 
-**No backend changes. No new dependencies.**
+---
+
+## 6. Touch & Scroll
+- Add `overscroll-behavior-y: contain` to `<html>` in `index.css` to prevent rubber-band bounce
+- Add `-webkit-overflow-scrolling: touch` for smooth scroll on iOS
+- Add `touch-action: manipulation` globally to eliminate 300ms tap delay
+- Ensure `overflow-x: hidden` on main containers
+
+**File**: `src/index.css`
+
+---
+
+## Files Summary
+
+**New files** (2):
+- `src/components/MobileAppShell.tsx` -- shared layout with persistent bottom nav
+- `src/components/FeedSkeleton.tsx` -- skeleton loaders
+
+**Modified files** (8):
+- `src/pages/Auth.tsx` -- bigger logo, remove "Mijedu" text, remove blur
+- `src/App.tsx` -- layout route for shell, QueryClient retry config, NetworkStatus
+- `src/pages/SocietyFeed.tsx` -- remove GhostBottomNav, use skeletons
+- `src/pages/TribeFeed.tsx` -- remove GhostBottomNav, use skeletons
+- `src/pages/Market.tsx` -- remove GhostBottomNav, use skeletons
+- `src/pages/Explore.tsx` -- remove GhostBottomNav, use skeletons
+- `src/index.css` -- touch/scroll optimizations
+- `src/components/NetworkStatus.tsx` -- offline banner (new)
+
+**No backend or database changes.**
 
