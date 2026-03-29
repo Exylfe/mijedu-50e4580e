@@ -187,6 +187,7 @@ const AppRoutes = () => {
         <Route path="/tribe-feed" element={<TribeFeed />} />
         <Route path="/market" element={<Market />} />
         <Route path="/settings" element={<Settings />} />
+      </Route>
       <Route path="/pending" element={<TribePending />} />
       <Route path="/gatekeeper" element={<AdminRoute><Gatekeeper /></AdminRoute>} />
       <Route path="/rooms" element={<ProtectedRoute><Rooms /></ProtectedRoute>} />
