@@ -4,7 +4,7 @@ import { Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSimulatedAuth } from '@/hooks/useSimulatedAuth';
-import GhostBottomNav from '@/components/GhostBottomNav';
+import { FeedSkeleton } from '@/components/FeedSkeleton';
 import PostCard from '@/components/PostCard';
 import CreatePostModal from '@/components/CreatePostModal';
 import ImmersiveHeader from '@/components/ImmersiveHeader';
