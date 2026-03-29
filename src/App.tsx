@@ -14,7 +14,6 @@ import ViewAsSimulator from "@/components/ViewAsSimulator";
 import PendingVerificationOverlay from "@/components/PendingVerificationOverlay";
 import NetworkStatus from "@/components/NetworkStatus";
 import MobileAppShell from "@/components/MobileAppShell";
-import PendingVerificationOverlay from "@/components/PendingVerificationOverlay";
 import Auth from "./pages/Auth";
 import SocietyFeed from "./pages/SocietyFeed";
 import Gatekeeper from "./pages/Gatekeeper";
