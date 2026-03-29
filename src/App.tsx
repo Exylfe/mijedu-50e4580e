@@ -181,40 +181,14 @@ const AppRoutes = () => {
           </AuthRoute>
         }
       />
-      <Route
-        path="/feed"
-        element={
-          <ProtectedRoute>
-            <SocietyFeed />
-          </ProtectedRoute>
-        }
-      />
-      {/* Legacy /pending route redirects to /feed (overlay handles it now) */}
-      <Route path="/pending" element={<TribePending />} />
-      <Route
-        path="/gatekeeper"
-        element={
-          <AdminRoute>
-            <Gatekeeper />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/market"
-        element={
-          <ProtectedRoute>
-            <Market />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tribe-feed"
-        element={
-          <ProtectedRoute>
-            <TribeFeed />
-          </ProtectedRoute>
-        }
-      />
+      {/* Main pages wrapped in MobileAppShell for persistent bottom nav */}
+      <Route element={<ProtectedRoute><MobileAppShell /></ProtectedRoute>}>
+        <Route path="/feed" element={<SocietyFeed />} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/tribe-feed" element={<TribeFeed />} />
+        <Route path="/market" element={<Market />} />
+        <Route path="/settings" element={<Settings />} />
+      </Route>
       <Route
         path="/rooms"
         element={
