@@ -13,41 +13,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # 1. Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      # 2. Setup Node 24
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
 
-      - name: Set up JDK 17
+      # 3. Setup Java JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'zulu'
-          cache: 'gradle'
 
-      - name: Install dependencies
+      # 4. Install dependencies
+      - name: Install npm dependencies
         run: npm install
 
+      # 5. Build web app
       - name: Build web app
         run: npm run build
 
+      # 6. Install Capacitor Android
       - name: Install Capacitor Android
         run: npm install @capacitor/android
 
+      # 7. Add and sync Capacitor platform
       - name: Sync Capacitor
         run: |
           npx cap add android || true
           npx cap sync android
 
-      - name: Build APK
+      # 8. Dynamically point Gradle to the correct JDK 17 location
+      - name: Ensure Gradle uses JDK 17
+        run: |
+          echo "org.gradle.java.home=$JAVA_HOME" >> android/gradle.properties
+
+      # 9. Build APK
+      - name: Build Android APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug -Dorg.gradle.java.home=$JAVA_HOME_17_X64
+          ./gradlew assembleDebug
 
+      # 10. Upload APK artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
