@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -24,29 +25,26 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install dependencies
         run: npm install
 
       - name: Build web app
         run: npm run build
 
-      - name: Install Capacitor Android
-        run: npm install @capacitor/android
-
       - name: Add Android platform
-        run: npx cap add android
+        run: npx cap add android || true
 
       - name: Sync Capacitor
         run: npx cap sync android
-
-      - name: Fix Java version for Gradle
-        run: echo "org.gradle.java.home=$JAVA_HOME" >> android/gradle.properties
 
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug 
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
