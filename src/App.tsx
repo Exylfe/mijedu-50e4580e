@@ -2,7 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from "react-router-dom";
+
+const isNative = typeof window !== 'undefined' && 
+  (window.location.protocol === 'capacitor:' || window.location.protocol === 'file:');
+const Router = isNative ? HashRouter : BrowserRouter;
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ViewAsProvider } from "@/contexts/ViewAsContext";
 import { ProfileCardProvider } from "@/contexts/ProfileCardContext";
@@ -286,7 +290,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <Router>
         <AuthProvider>
           <ViewAsProvider>
             <ProfileCardProvider>
@@ -300,7 +304,7 @@ const App = () => (
             </ProfileCardProvider>
           </ViewAsProvider>
         </AuthProvider>
-      </BrowserRouter>
+      </Router>
     </TooltipProvider>
   </QueryClientProvider>
 );
