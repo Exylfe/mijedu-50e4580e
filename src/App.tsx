@@ -304,7 +304,7 @@ const App = () => (
             </ProfileCardProvider>
           </ViewAsProvider>
         </AuthProvider>
-      </BrowserRouter>
+      </Router>
     </TooltipProvider>
   </QueryClientProvider>
 );
