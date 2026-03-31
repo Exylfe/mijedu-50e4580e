@@ -290,7 +290,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <Router>
         <AuthProvider>
           <ViewAsProvider>
             <ProfileCardProvider>
