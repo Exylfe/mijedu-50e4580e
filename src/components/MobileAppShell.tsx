@@ -1,8 +1,9 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Compass, MessageCircle, Store, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-type NavItem = 'home' | 'discover' | 'chat' | 'market' | 'profile';
+import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const navItems: { id: NavItem; icon: typeof Home; label: string; path: string }[] = [
   { id: 'home', icon: Home, label: 'Feed', path: '/feed' },
