@@ -369,7 +369,7 @@ const Market = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {filteredProducts.map((product, index) => (
+            {(filteredProducts ?? []).map((product, index) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}
