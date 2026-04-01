@@ -71,6 +71,7 @@ export function useNotifications() {
 
     fetchNotifications();
 
+    const channelName = `user-notifications-${user.id}-${Date.now()}`;
     const channel = supabase
       .channel('user-notifications')
       .on(
