@@ -287,27 +287,29 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <Router>
-        <AuthProvider>
-          <ViewAsProvider>
-            <ProfileCardProvider>
-              <InteractionFeedbackProvider>
-                <ViewAsSimulator />
-                <OnboardingNotification />
-                <ProfileCardOverlay />
-                <NetworkStatus />
-                <AppRoutes />
-              </InteractionFeedbackProvider>
-            </ProfileCardProvider>
-          </ViewAsProvider>
-        </AuthProvider>
-      </Router>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Router>
+          <AuthProvider>
+            <ViewAsProvider>
+              <ProfileCardProvider>
+                <InteractionFeedbackProvider>
+                  <ViewAsSimulator />
+                  <OnboardingNotification />
+                  <ProfileCardOverlay />
+                  <NetworkStatus />
+                  <AppRoutes />
+                </InteractionFeedbackProvider>
+              </ProfileCardProvider>
+            </ViewAsProvider>
+          </AuthProvider>
+        </Router>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

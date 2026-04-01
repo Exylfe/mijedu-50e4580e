@@ -80,6 +80,15 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Sora', sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Allow text selection in inputs/textareas */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   html {
