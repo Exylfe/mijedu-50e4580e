@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-const navItems: { id: NavItem; icon: typeof Home; label: string; path: string }[] = [
+type NavItem = 'home' | 'discover' | 'chat' | 'market' | 'profile';
   { id: 'home', icon: Home, label: 'Feed', path: '/feed' },
   { id: 'discover', icon: Compass, label: 'Explore', path: '/explore' },
   { id: 'chat', icon: MessageCircle, label: 'Tribe', path: '/tribe-feed' },
