@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import ProductDetailModal from '@/components/ProductDetailModal';
 import FeaturedPartnerProducts from '@/components/market/FeaturedPartnerProducts';
+import PullToRefresh from '@/components/PullToRefresh';
 import { useCategories, type Category } from '@/hooks/useCategories';
 
 interface Product {
