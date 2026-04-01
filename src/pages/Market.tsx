@@ -223,8 +223,8 @@ const Market = () => {
   );
 
   return (
+    <PullToRefresh onRefresh={() => { setProducts([]); setCursor(null); setHasMore(true); fetchProducts(false); }}>
     <div className="min-h-screen bg-background pb-24" onClick={handleContentTap}>
-
       <ImmersiveHeader title="Bwalo Market" subtitle="Exclusive student deals" isVisible={isVisible} />
       <div className="h-16" />
 
