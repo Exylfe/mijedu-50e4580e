@@ -11,6 +11,7 @@ import BannerCarousel from '@/components/BannerCarousel';
 import StoryTray from '@/components/StoryTray';
 import ImmersiveHeader from '@/components/ImmersiveHeader';
 import FeedbackPopup from '@/components/FeedbackPopup';
+import PullToRefresh from '@/components/PullToRefresh';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -446,8 +447,8 @@ const SocietyFeed = () => {
   };
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="min-h-screen bg-background pb-24" onClick={handleContentTap}>
-
       <ImmersiveHeader title="Global Bwalo" subtitle="Public Feed" isVisible={isVisible} onRefresh={handleRefresh} />
       <div className="h-16" />
 
@@ -540,7 +541,7 @@ const SocietyFeed = () => {
             <p className="text-muted-foreground text-sm">{getEmptyState().subtitle}</p>
           </div>
         ) : (
-          posts.map((post, index) => (
+          (posts ?? []).map((post, index) => (
             <PostCard
               key={post.id}
               post={post}
@@ -601,6 +602,7 @@ const SocietyFeed = () => {
 
       
     </div>
+    </PullToRefresh>
   );
 };
 

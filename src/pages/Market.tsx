@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import ProductDetailModal from '@/components/ProductDetailModal';
 import FeaturedPartnerProducts from '@/components/market/FeaturedPartnerProducts';
+import PullToRefresh from '@/components/PullToRefresh';
 import { useCategories, type Category } from '@/hooks/useCategories';
 
 interface Product {
@@ -222,8 +223,8 @@ const Market = () => {
   );
 
   return (
+    <PullToRefresh onRefresh={() => { setProducts([]); setCursor(null); setHasMore(true); fetchProducts(false); }}>
     <div className="min-h-screen bg-background pb-24" onClick={handleContentTap}>
-
       <ImmersiveHeader title="Bwalo Market" subtitle="Exclusive student deals" isVisible={isVisible} />
       <div className="h-16" />
 
@@ -368,7 +369,7 @@ const Market = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {filteredProducts.map((product, index) => (
+            {(filteredProducts ?? []).map((product, index) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -453,6 +454,7 @@ const Market = () => {
         onClose={() => { setIsDetailOpen(false); setSelectedProduct(null); }}
       />
     </div>
+    </PullToRefresh>
   );
 };
 

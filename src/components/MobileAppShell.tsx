@@ -1,6 +1,9 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Compass, MessageCircle, Store, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 type NavItem = 'home' | 'discover' | 'chat' | 'market' | 'profile';
 
@@ -24,9 +27,41 @@ const MobileAppShell = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const activeItem = routeToNav[location.pathname] || 'home';
+  const queryClient = useQueryClient();
+
+  // Prefetch data for other tabs on mount
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ['market-products-prefetch'],
+      queryFn: async () => {
+        const { data } = await supabase
+          .from('products')
+          .select('id, title, price, image_url')
+          .eq('is_active', true)
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(10);
+        return data ?? [];
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['tribes-prefetch'],
+      queryFn: async () => {
+        const { data } = await supabase
+          .from('tribes')
+          .select('id, name, type')
+          .eq('is_visible', true)
+          .order('name')
+          .limit(20);
+        return data ?? [];
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+  }, [queryClient]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <Outlet />
 
       {/* Persistent Bottom Nav */}

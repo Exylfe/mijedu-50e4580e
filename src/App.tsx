@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -286,27 +287,29 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <Router>
-        <AuthProvider>
-          <ViewAsProvider>
-            <ProfileCardProvider>
-              <InteractionFeedbackProvider>
-                <ViewAsSimulator />
-                <OnboardingNotification />
-                <ProfileCardOverlay />
-                <NetworkStatus />
-                <AppRoutes />
-              </InteractionFeedbackProvider>
-            </ProfileCardProvider>
-          </ViewAsProvider>
-        </AuthProvider>
-      </Router>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Router>
+          <AuthProvider>
+            <ViewAsProvider>
+              <ProfileCardProvider>
+                <InteractionFeedbackProvider>
+                  <ViewAsSimulator />
+                  <OnboardingNotification />
+                  <ProfileCardOverlay />
+                  <NetworkStatus />
+                  <AppRoutes />
+                </InteractionFeedbackProvider>
+              </ProfileCardProvider>
+            </ViewAsProvider>
+          </AuthProvider>
+        </Router>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
