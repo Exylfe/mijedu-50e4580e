@@ -541,7 +541,7 @@ const SocietyFeed = () => {
             <p className="text-muted-foreground text-sm">{getEmptyState().subtitle}</p>
           </div>
         ) : (
-          posts.map((post, index) => (
+          (posts ?? []).map((post, index) => (
             <PostCard
               key={post.id}
               post={post}
