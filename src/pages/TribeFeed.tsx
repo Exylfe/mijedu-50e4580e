@@ -114,7 +114,7 @@ const TribeFeed = () => {
     const result: (PostWithProfile | { type: 'billboard'; data: Billboard })[] = [];
     let billboardIndex = 0;
     
-    posts.forEach((post, index) => {
+    (posts ?? []).forEach((post, index) => {
       result.push(post);
       
       if ((index + 1) % 5 === 0 && billboardIndex < billboards.length) {

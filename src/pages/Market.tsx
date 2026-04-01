@@ -454,6 +454,7 @@ const Market = () => {
         onClose={() => { setIsDetailOpen(false); setSelectedProduct(null); }}
       />
     </div>
+    </PullToRefresh>
   );
 };
 

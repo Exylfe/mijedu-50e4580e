@@ -602,6 +602,7 @@ const SocietyFeed = () => {
 
       
     </div>
+    </PullToRefresh>
   );
 };
 
