@@ -264,7 +264,7 @@ const TribeFeed = () => {
         onRefresh={handleRefresh}
       />
 
-      <div className="h-16" />
+      <div style={{ height: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }} />
 
       {/* Super Admin tribe selector - replaces god view */}
       {realIsSuperAdmin && tribes.length > 0 && (

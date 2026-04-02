@@ -226,7 +226,7 @@ const Market = () => {
     <PullToRefresh onRefresh={() => { setProducts([]); setCursor(null); setHasMore(true); fetchProducts(false); }}>
     <div className="min-h-screen bg-background pb-24" onClick={handleContentTap}>
       <ImmersiveHeader title="Bwalo Market" subtitle="Exclusive student deals" isVisible={isVisible} />
-      <div className="h-16" />
+      <div style={{ height: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }} />
 
       {/* Search */}
       <div className="px-4 py-4">
