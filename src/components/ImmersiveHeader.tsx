@@ -45,7 +45,7 @@ const ImmersiveHeader = ({ title, subtitle, isVisible, onRefresh }: ImmersiveHea
     <>
       <AnimatePresence>
         {isVisible && (
-          <motion.header initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -100, opacity: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="fixed top-0 left-0 right-0 z-40" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+          <motion.header initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -100, opacity: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="h-1 bg-gradient-to-r from-primary to-secondary" />
             <div className="px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -70,7 +70,7 @@ const ImmersiveHeader = ({ title, subtitle, isVisible, onRefresh }: ImmersiveHea
         {showMenu && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50" onClick={() => setShowMenu(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -10 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }} className="fixed top-16 right-4 z-50 min-w-56 rounded-2xl p-2 shadow-xl" style={{ background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', border: '0.5px solid hsl(var(--border) / 0.5)' }}>
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -10 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }} className="fixed right-4 z-50 min-w-56 rounded-2xl p-2 shadow-xl" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 4rem)', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', border: '0.5px solid hsl(var(--border) / 0.5)' }}>
               {profile && user && (
                 <button onClick={() => handleNavigation(`/profile/${user.id}`)} className="w-full flex items-center gap-3 p-3 mb-2 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-left">
                   <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center"><User className="w-4 h-4 text-primary" /></div>

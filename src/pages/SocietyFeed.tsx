@@ -450,7 +450,7 @@ const SocietyFeed = () => {
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="min-h-screen bg-background pb-24" onClick={handleContentTap}>
       <ImmersiveHeader title="Global Bwalo" subtitle="Public Feed" isVisible={isVisible} onRefresh={handleRefresh} />
-      <div className="h-16" />
+      <div style={{ height: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }} />
 
       {/* Guided Posting Prompt Bar */}
       {canPost && (
