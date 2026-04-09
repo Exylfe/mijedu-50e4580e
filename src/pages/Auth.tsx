@@ -139,7 +139,7 @@ const Auth = () => {
   const mediaTribes = tribes.filter(t => t.type === 'media');
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-4 overflow-y-auto">
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -320,7 +320,8 @@ const Gatekeeper = () => {
         adminTribe={adminTribe}
       />
 
-      <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/30">
+      <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/30" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <div className="h-1 bg-gradient-to-r from-primary to-secondary" />
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-xl hover:bg-muted/50 transition-colors">

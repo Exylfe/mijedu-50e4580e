@@ -171,7 +171,7 @@ const GatekeeperSidebar = ({
             }}
           >
             {/* Header */}
-            <div className="p-4 flex items-center justify-between border-b border-border/30">
+            <div className="p-4 flex items-center justify-between border-b border-border/30" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
                   <Shield className="w-5 h-5 text-primary-foreground" />
