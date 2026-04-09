@@ -92,27 +92,22 @@ const SettingsSection = () => {
 
       if (tribesError) throw tribesError;
 
-      const pinnedUntil = new Date();
-      pinnedUntil.setHours(pinnedUntil.getHours() + 24);
-
       // Create a pinned post for each tribe
-      const posts = tribes?.map(tribe => ({
+      const posts = (tribes ?? []).map(tribe => ({
         user_id: user.id,
         content: `🔔 **Official Exylfe Corp Update**\n\n${broadcastMessage}`,
-        visibility: 'public',
+        visibility: 'public' as const,
         target_tribe: tribe.name,
         is_pinned: true,
-        pinned_until: pinnedUntil.toISOString(),
-      })) || [];
+      }));
 
       // Also create a global post (no target tribe)
       posts.push({
         user_id: user.id,
         content: `🔔 **Official Exylfe Corp Update**\n\n${broadcastMessage}`,
-        visibility: 'public',
+        visibility: 'public' as const,
         target_tribe: null as unknown as string,
         is_pinned: true,
-        pinned_until: pinnedUntil.toISOString(),
       });
 
       const { error } = await supabase.from('posts').insert(posts);
