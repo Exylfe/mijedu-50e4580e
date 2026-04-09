@@ -101,7 +101,7 @@ const BannersSection = () => {
           image_url: urlData.publicUrl,
           link_url: linkUrl || null,
           expires_at: expiresAt || null,
-          created_by: user.id,
+          brand_user_id: user.id,
           is_active: true
         });
 

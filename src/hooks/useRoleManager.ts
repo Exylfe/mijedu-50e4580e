@@ -57,7 +57,6 @@ export const useRoleManager = (options?: RoleManagerOptions) => {
           user_id: userId,
           role: newRole,
           tribe: newRole === 'tribe_admin' ? (context?.tribe || null) : null,
-          tribe_id: newRole === 'tribe_admin' ? (context?.tribeId || null) : null,
         });
 
       if (insertError) throw insertError;

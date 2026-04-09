@@ -112,7 +112,6 @@ const SettingsSection = () => {
         visibility: 'public',
         target_tribe: null as unknown as string,
         is_pinned: true,
-        pinned_until: pinnedUntil.toISOString(),
       });
 
       const { error } = await supabase.from('posts').insert(posts);

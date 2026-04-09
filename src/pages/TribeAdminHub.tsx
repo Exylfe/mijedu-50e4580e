@@ -262,7 +262,6 @@ const TribeAdminHub = () => {
       visibility: 'private',
       target_tribe: targetTribe,
       is_pinned: true,
-      pinned_until: pinnedUntil.toISOString()
     });
     
     if (error) {
