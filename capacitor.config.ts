@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'com.mijedu.app',
   appName: 'Mijedu',
   webDir: 'dist',
+  server: {
+    androidScheme: 'https',
+  },
   plugins: {
     Keyboard: {
       resize: 'body',
