@@ -61,7 +61,7 @@ const MobileAppShell = () => {
   }, [queryClient]);
 
   return (
-    <div className="min-h-screen bg-background" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="min-h-screen bg-background">
       <Outlet />
 
       {/* Persistent Bottom Nav */}
