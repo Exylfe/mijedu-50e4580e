@@ -1,7 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
 const PostSkeleton = () => (
-  <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+  <div className="rounded-2xl border border-border bg-card p-4 space-y-3 card-shadow">
     {/* Header: avatar + name */}
     <div className="flex items-center gap-3">
       <Skeleton className="w-10 h-10 rounded-full" />
@@ -27,7 +27,7 @@ const PostSkeleton = () => (
 );
 
 const ProductSkeleton = () => (
-  <div className="rounded-xl border border-border bg-card overflow-hidden">
+  <div className="rounded-2xl border border-border bg-card overflow-hidden card-shadow">
     <Skeleton className="aspect-square w-full" />
     <div className="p-3 space-y-2">
       <Skeleton className="h-3 w-16" />

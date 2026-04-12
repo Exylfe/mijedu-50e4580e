@@ -20,6 +20,7 @@ import PendingVerificationOverlay from "@/components/PendingVerificationOverlay"
 import NetworkStatus from "@/components/NetworkStatus";
 import MobileAppShell from "@/components/MobileAppShell";
 import { useBackButton } from "@/hooks/useBackButton";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Auth from "./pages/Auth";
 import SocietyFeed from "./pages/SocietyFeed";
 import Gatekeeper from "./pages/Gatekeeper";
@@ -170,6 +171,7 @@ const BrandRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   const { isSuperAdmin } = useAuth();
   useBackButton();
+  usePushNotifications();
   const { isMaintenanceMode, maintenanceMessage, isLoading } = useMaintenanceMode();
 
   if (!isLoading && isMaintenanceMode && !isSuperAdmin) {
