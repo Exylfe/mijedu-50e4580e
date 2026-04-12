@@ -829,6 +829,7 @@ export type Database = {
           is_verified: boolean
           nickname: string
           points: number
+          push_token: string | null
           role: string | null
           social_links: Json | null
           student_id_url: string | null
@@ -853,6 +854,7 @@ export type Database = {
           is_verified?: boolean
           nickname: string
           points?: number
+          push_token?: string | null
           role?: string | null
           social_links?: Json | null
           student_id_url?: string | null
@@ -877,6 +879,7 @@ export type Database = {
           is_verified?: boolean
           nickname?: string
           points?: number
+          push_token?: string | null
           role?: string | null
           social_links?: Json | null
           student_id_url?: string | null
