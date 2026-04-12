@@ -87,6 +87,11 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  /* Ensure focused inputs scroll into view on mobile keyboards */
+  input:focus, textarea:focus {
+    scroll-margin-top: 100px;
+  }
+
   /* Allow text selection in inputs/textareas */
   input, textarea, [contenteditable="true"] {
     -webkit-user-select: text;
@@ -216,7 +221,8 @@
 
 /* Card shadow for lifted look */
 .card-shadow {
-  box-shadow: 0 2px 8px hsl(220, 10%, 50%, 0.08), 0 1px 3px hsl(220, 10%, 50%, 0.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s ease;
 }
 
 .safe-top {

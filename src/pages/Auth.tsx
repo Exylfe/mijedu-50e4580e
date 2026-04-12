@@ -156,7 +156,7 @@ const Auth = () => {
 
         {/* Form card */}
         <div className="gradient-border rounded-2xl overflow-hidden">
-          <div className="bg-card p-6">
+          <div className="glass-card p-6 rounded-2xl">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email */}
               <div className="relative">
@@ -166,6 +166,7 @@ const Auth = () => {
                   placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={(e) => setTimeout(() => (e.target as HTMLElement).scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)}
                   className="h-14 pl-12 bg-muted/50 border-border focus:border-neon-purple focus:ring-neon-purple/20 text-foreground placeholder:text-muted-foreground rounded-xl"
                 />
               </div>
@@ -178,6 +179,7 @@ const Auth = () => {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={(e) => setTimeout(() => (e.target as HTMLElement).scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)}
                   className="h-14 pl-12 pr-12 bg-muted/50 border-border focus:border-neon-purple focus:ring-neon-purple/20 text-foreground placeholder:text-muted-foreground rounded-xl"
                 />
                 <button
@@ -200,6 +202,7 @@ const Auth = () => {
                       placeholder="Choose a nickname"
                       value={nickname}
                       onChange={(e) => setNickname(e.target.value)}
+                      onFocus={(e) => setTimeout(() => (e.target as HTMLElement).scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)}
                       className="h-14 pl-12 bg-muted/50 border-border focus:border-neon-purple focus:ring-neon-purple/20 text-foreground placeholder:text-muted-foreground rounded-xl"
                     />
                   </div>
