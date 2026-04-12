@@ -1,80 +1,87 @@
 
 
-# Fix: Global Safe Area, Hardware Back Button, Keyboard, and App Branding
+# Push Notifications, Keyboard Fix, and UI Improvements
 
-## Why Previous Fixes Didn't Work
+## Task 1: Push Notifications via `@capacitor/push-notifications`
 
-Safe-area padding was applied to individual components (ImmersiveHeader, MobileAppShell, Gatekeeper header) but **not globally**. Many pages render outside MobileAppShell (Auth, Gatekeeper, Rooms, RoomChat, ProfilePage, TribeAdminHub, About, Settings, etc.) and their `sticky top-0` headers sit right under the notch. The fix must be at the CSS level so every page gets it automatically.
+**Install**: `@capacitor/push-notifications`
 
----
+**New file**: `src/hooks/usePushNotifications.ts`
+- Import `PushNotifications` from `@capacitor/push-notifications`
+- On mount (if user is authenticated):
+  1. Request permission via `PushNotifications.requestPermissions()`
+  2. If granted, call `PushNotifications.register()`
+  3. Listen for `registration` event — save the FCM token to the user's profile row (`push_token` column) in Supabase
+  4. Listen for `pushNotificationReceived` (foreground) — show a sonner toast with the notification body
+  5. Listen for `pushNotificationActionPerformed` (tap) — navigate to the relevant page based on notification data payload
+- Clean up listeners on unmount
 
-## Task 1: Global Safe-Area via CSS (covers ALL pages)
+**Edit**: `src/App.tsx` — call `usePushNotifications()` inside `AppRoutes` (next to `useBackButton()`)
 
-**File**: `src/index.css`
+**Database**: Add a `push_token` text column to the `profiles` table via migration so tokens can be stored per user
 
-- Add `padding-top: env(safe-area-inset-top, 0px)` directly on the `body` rule. This pushes all page content below the notch universally -- no per-page changes needed.
-- Add `padding-bottom: env(safe-area-inset-bottom, 0px)` for home bar devices.
-- Remove the per-component `paddingTop: 'env(safe-area-inset-top)'` from MobileAppShell since body now handles it.
-
-**File**: `src/components/MobileAppShell.tsx`
-- Remove `style={{ paddingTop: 'env(safe-area-inset-top)' }}` from the outer div (body CSS now handles this).
-
-**File**: `src/components/ImmersiveHeader.tsx`
-- Keep the `paddingTop: env(safe-area-inset-top)` on the **fixed** header because fixed elements don't inherit body padding. This is correct and stays.
-
-**File**: `src/pages/Gatekeeper.tsx`
-- Keep the `paddingTop: env(safe-area-inset-top)` on the **sticky** header. This is correct.
-
-**Files**: `src/pages/SocietyFeed.tsx`, `src/pages/TribeFeed.tsx`, `src/pages/Market.tsx`
-- Keep the safe-area spacer divs as-is (they account for the fixed ImmersiveHeader height).
-
-**Result**: Every page -- Auth, About, Rooms, RoomChat, ProfilePage, TribeAdminHub, Leaderboard, AIAssistant, ShopOffice, VerificationStation, etc. -- gets safe-area top padding automatically.
+**Note**: Actual sending of push notifications requires Firebase Cloud Messaging (FCM) setup on the Android side and a server-side function to trigger sends. This implementation covers the **client-side registration and handling**. After pulling, you need to:
+1. Create a Firebase project and download `google-services.json` into `android/app/`
+2. Run `npx cap sync android`
 
 ---
 
-## Task 2: Hardware Back Button Handler
+## Task 2: Fix Keyboard Blank Area on Auth Screen
 
-**New file**: `src/hooks/useBackButton.ts`
+The screenshot shows the Auth page with a large blank gap between the form and the keyboard. The issue: `resize: 'native'` with `overlaysWebView: true` on StatusBar causes the WebView to not resize properly on some Android devices.
 
-- Import `@capacitor/app` (the App plugin).
-- On mount, register `App.addListener('backButton', handler)`.
-- Logic:
-  - If on a root tab (`/feed`, `/explore`, `/tribe-feed`, `/market`, `/settings`):
-    - If NOT on `/feed`, navigate to `/feed`.
-    - If already on `/feed`, show a toast "Press back again to exit" and set a 2-second flag. On second press within that window, call `App.exitApp()`.
-  - Otherwise, call `window.history.back()`.
-- Clean up the listener on unmount.
-
-**File**: `src/App.tsx`
-- Call `useBackButton()` inside the `AppRoutes` component (it has access to Router context).
-
-**Install**: `@capacitor/app` npm package.
-
----
-
-## Task 3: Keyboard Configuration
+**Fix approach** (two-part):
 
 **File**: `capacitor.config.ts`
-- Change Keyboard `resize` from `'body'` to `'native'`. The `'body'` mode resizes the entire page which squishes the UI. `'native'` lets the Android system handle the resize naturally (pan mode), keeping input fields visible without layout distortion.
+- Change Keyboard `resize` from `'native'` to `'none'`. This tells Capacitor to NOT resize the WebView at all — we handle scrolling ourselves via CSS.
+- This prevents the blank area because the WebView stays full-size and the form scrolls into view naturally.
+
+**File**: `src/pages/Auth.tsx`
+- Add an `inputMode` attribute and an `onFocus` handler to scroll the focused input into view:
+  ```
+  onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)}
+  ```
+- Apply this to both the email and password inputs (and nickname/tribe on sign-up)
+- The outer container already has `overflow-y-auto` which enables this scroll behavior
+
+**File**: `src/index.css` — add a global rule:
+```css
+input:focus, textarea:focus {
+  scroll-margin-top: 100px;
+}
+```
 
 ---
 
-## Task 4: App Branding / Asset Generation Instructions
+## Task 3: UI Improvements for a More Polished Look
 
-The `@capacitor/assets` CLI tool generates native icons and splash screens from a source image. This cannot run in Lovable, so the user must run it locally.
+### 3a. Global safe-area padding on body (still missing)
+**File**: `src/index.css` — add to the `body` rule:
+```css
+padding-top: env(safe-area-inset-top, 0px);
+padding-bottom: env(safe-area-inset-bottom, 0px);
+```
+This was planned previously but never applied. This single change covers ALL pages.
 
-**File**: Copy the uploaded `Mijedu.Logo.jpg` to `src/assets/mijedu-logo-source.jpg` for reference.
+### 3b. Smoother card elevations
+**File**: `src/index.css` — enhance `.card-shadow`:
+```css
+box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+transition: box-shadow 0.2s ease;
+```
 
-**Instructions to provide** (post-implementation):
-1. Git pull the project.
-2. Place the Mijedu logo as `resources/icon.png` (1024x1024, square).
-3. Create a splash source at `resources/splash.png` (2732x2732, centered logo on purple background).
-4. Run:
-   ```bash
-   npm install -D @capacitor/assets
-   npx capacitor-assets generate --android
-   ```
-5. Run `npx cap sync android` and rebuild the APK.
+### 3c. Auth screen polish
+**File**: `src/pages/Auth.tsx`
+- Add subtle entrance animation delay to form fields for a staggered reveal
+- Add a frosted glass effect to the form card background
+
+### 3d. Bottom navigation active indicator
+**File**: `src/components/BottomNav.tsx`
+- Add a small animated dot/pill indicator under the active tab icon (common in modern mobile apps)
+
+### 3e. Skeleton loading shimmer improvement
+**File**: `src/components/FeedSkeleton.tsx`
+- Ensure skeleton cards have rounded corners matching actual PostCard design
 
 ---
 
@@ -82,13 +89,20 @@ The `@capacitor/assets` CLI tool generates native icons and splash screens from 
 
 | Action | File |
 |--------|------|
-| Edit | `src/index.css` -- add body safe-area padding |
-| Edit | `src/components/MobileAppShell.tsx` -- remove redundant inline safe-area |
-| Edit | `capacitor.config.ts` -- change Keyboard resize to `'native'` |
-| Create | `src/hooks/useBackButton.ts` -- hardware back button handler |
-| Edit | `src/App.tsx` -- wire up useBackButton |
-| Install | `@capacitor/app` |
-| Copy | Uploaded logo to `src/assets/` |
+| Install | `@capacitor/push-notifications` |
+| Create | `src/hooks/usePushNotifications.ts` |
+| Edit | `src/App.tsx` — wire up push notifications hook |
+| Edit | `capacitor.config.ts` — change Keyboard resize to `'none'` |
+| Edit | `src/pages/Auth.tsx` — scrollIntoView on focus + staggered animations |
+| Edit | `src/index.css` — body safe-area, input scroll-margin, card shadows |
+| Edit | `src/components/BottomNav.tsx` — active tab indicator |
+| Migration | Add `push_token` column to profiles |
 
-No routes, database logic, or component structure changed. After implementation, run `npx cap sync` locally before building the APK.
+No routes deleted. No auth logic changed. Branding preserved.
+
+**Post-implementation (local)**:
+1. Git pull
+2. Add `google-services.json` from Firebase Console to `android/app/`
+3. Run `npx cap sync android`
+4. Build APK
 
