@@ -1,108 +1,49 @@
 
 
-# Push Notifications, Keyboard Fix, and UI Improvements
+# Fix: Stop the APK from Crashing on Launch
 
-## Task 1: Push Notifications via `@capacitor/push-notifications`
+## Root Cause
 
-**Install**: `@capacitor/push-notifications`
+The APK crashes immediately ("Mijedu keeps stopping") because `@capacitor/push-notifications` was wired to run on every native launch via `usePushNotifications()` in `App.tsx`. On Android, this plugin **requires `google-services.json` from a Firebase project to be present in `android/app/`**. Without it, the native side fails during plugin initialization and the entire app crashes before React can even mount — which is why the JS-level `try/catch` inside the hook never saves it, and why no Supabase secret can fix it.
 
-**New file**: `src/hooks/usePushNotifications.ts`
-- Import `PushNotifications` from `@capacitor/push-notifications`
-- On mount (if user is authenticated):
-  1. Request permission via `PushNotifications.requestPermissions()`
-  2. If granted, call `PushNotifications.register()`
-  3. Listen for `registration` event — save the FCM token to the user's profile row (`push_token` column) in Supabase
-  4. Listen for `pushNotificationReceived` (foreground) — show a sonner toast with the notification body
-  5. Listen for `pushNotificationActionPerformed` (tap) — navigate to the relevant page based on notification data payload
-- Clean up listeners on unmount
+A Supabase secret cannot solve this. FCM is an Android-native dependency, not a runtime env var.
 
-**Edit**: `src/App.tsx` — call `usePushNotifications()` inside `AppRoutes` (next to `useBackButton()`)
+## The Fix (two layers)
 
-**Database**: Add a `push_token` text column to the `profiles` table via migration so tokens can be stored per user
+### Layer 1 — Make the app installable & stable on ANY Android device, even without Firebase set up
 
-**Note**: Actual sending of push notifications requires Firebase Cloud Messaging (FCM) setup on the Android side and a server-side function to trigger sends. This implementation covers the **client-side registration and handling**. After pulling, you need to:
-1. Create a Firebase project and download `google-services.json` into `android/app/`
-2. Run `npx cap sync android`
+**File**: `src/hooks/usePushNotifications.ts`
+- Wrap the dynamic import of `@capacitor/push-notifications` so the plugin module is **only loaded if the platform is native AND the plugin is actually available**.
+- Use `await import('@capacitor/push-notifications')` instead of a top-level import. If the import or `requestPermissions()` throws (i.e., FCM not configured), swallow the error and log a warning. This guarantees the app never crashes because of push.
+- Keep all listener registration inside the same try/catch.
 
----
+**File**: `src/hooks/useBackButton.ts`
+- Same defensive treatment: wrap `@capacitor/app` in a dynamic import inside a try/catch so a missing/broken plugin can't crash launch.
 
-## Task 2: Fix Keyboard Blank Area on Auth Screen
+**File**: `src/App.tsx`
+- No structural change — both hooks remain wired but are now crash-proof.
 
-The screenshot shows the Auth page with a large blank gap between the form and the keyboard. The issue: `resize: 'native'` with `overlaysWebView: true` on StatusBar causes the WebView to not resize properly on some Android devices.
+### Layer 2 — Branding + clear FCM setup instructions (for when the user wants real push)
 
-**Fix approach** (two-part):
+The user must, locally:
+1. Place the Mijedu logo at `resources/icon.png` (1024×1024) and `resources/splash.png` (2732×2732).
+2. Run `npm i -D @capacitor/assets && npx capacitor-assets generate --android` to replace the Capacitor logo on the installer.
+3. (Only when push is wanted) Create a free Firebase project, download `google-services.json`, drop it into `android/app/`, then `npx cap sync android`.
 
-**File**: `capacitor.config.ts`
-- Change Keyboard `resize` from `'native'` to `'none'`. This tells Capacitor to NOT resize the WebView at all — we handle scrolling ourselves via CSS.
-- This prevents the blank area because the WebView stays full-size and the form scrolls into view naturally.
+Until step 3 is done, push will silently no-op — but the app will install and run perfectly on any Android device.
 
-**File**: `src/pages/Auth.tsx`
-- Add an `inputMode` attribute and an `onFocus` handler to scroll the focused input into view:
-  ```
-  onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)}
-  ```
-- Apply this to both the email and password inputs (and nickname/tribe on sign-up)
-- The outer container already has `overflow-y-auto` which enables this scroll behavior
+## Files Modified
 
-**File**: `src/index.css` — add a global rule:
-```css
-input:focus, textarea:focus {
-  scroll-margin-top: 100px;
-}
+| File | Change |
+|------|--------|
+| `src/hooks/usePushNotifications.ts` | Dynamic import + full try/catch so missing FCM never crashes the app |
+| `src/hooks/useBackButton.ts` | Dynamic import of `@capacitor/app` wrapped in try/catch |
+
+No DB, route, or auth changes. After approval, the user runs locally:
 ```
-
----
-
-## Task 3: UI Improvements for a More Polished Look
-
-### 3a. Global safe-area padding on body (still missing)
-**File**: `src/index.css` — add to the `body` rule:
-```css
-padding-top: env(safe-area-inset-top, 0px);
-padding-bottom: env(safe-area-inset-bottom, 0px);
+git pull
+npm install
+npx cap sync android
 ```
-This was planned previously but never applied. This single change covers ALL pages.
-
-### 3b. Smoother card elevations
-**File**: `src/index.css` — enhance `.card-shadow`:
-```css
-box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
-transition: box-shadow 0.2s ease;
-```
-
-### 3c. Auth screen polish
-**File**: `src/pages/Auth.tsx`
-- Add subtle entrance animation delay to form fields for a staggered reveal
-- Add a frosted glass effect to the form card background
-
-### 3d. Bottom navigation active indicator
-**File**: `src/components/BottomNav.tsx`
-- Add a small animated dot/pill indicator under the active tab icon (common in modern mobile apps)
-
-### 3e. Skeleton loading shimmer improvement
-**File**: `src/components/FeedSkeleton.tsx`
-- Ensure skeleton cards have rounded corners matching actual PostCard design
-
----
-
-## Files Summary
-
-| Action | File |
-|--------|------|
-| Install | `@capacitor/push-notifications` |
-| Create | `src/hooks/usePushNotifications.ts` |
-| Edit | `src/App.tsx` — wire up push notifications hook |
-| Edit | `capacitor.config.ts` — change Keyboard resize to `'none'` |
-| Edit | `src/pages/Auth.tsx` — scrollIntoView on focus + staggered animations |
-| Edit | `src/index.css` — body safe-area, input scroll-margin, card shadows |
-| Edit | `src/components/BottomNav.tsx` — active tab indicator |
-| Migration | Add `push_token` column to profiles |
-
-No routes deleted. No auth logic changed. Branding preserved.
-
-**Post-implementation (local)**:
-1. Git pull
-2. Add `google-services.json` from Firebase Console to `android/app/`
-3. Run `npx cap sync android`
-4. Build APK
+…and the APK will install and launch on any Android device. Push remains dormant until `google-services.json` is added.
 
