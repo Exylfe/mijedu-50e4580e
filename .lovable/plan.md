@@ -1,49 +1,50 @@
 
 
-# Fix: Stop the APK from Crashing on Launch
+# Fix: App Crashes After Login (Push Notifications Root Cause)
 
-## Root Cause
+## Real Root Cause
 
-The APK crashes immediately ("Mijedu keeps stopping") because `@capacitor/push-notifications` was wired to run on every native launch via `usePushNotifications()` in `App.tsx`. On Android, this plugin **requires `google-services.json` from a Firebase project to be present in `android/app/`**. Without it, the native side fails during plugin initialization and the entire app crashes before React can even mount — which is why the JS-level `try/catch` inside the hook never saves it, and why no Supabase secret can fix it.
+The app crashes **after login** because `usePushNotifications()` is called inside `AppRoutes` — which only mounts after a user is authenticated. On Android, even with our dynamic-import + try/catch wrapper in the JS hook, the `@capacitor/push-notifications` plugin is **registered natively at app build time** via `npx cap sync`. When Android instantiates the plugin and there is no `google-services.json`, the **native Java code throws before our JS try/catch can ever run**, killing the process.
 
-A Supabase secret cannot solve this. FCM is an Android-native dependency, not a runtime env var.
+Wrapping the JS import is not enough. The plugin must not be present in the Android build at all unless Firebase is configured.
 
-## The Fix (two layers)
+## The Fix
 
-### Layer 1 — Make the app installable & stable on ANY Android device, even without Firebase set up
+### 1. Remove the native plugin from the Android build by default
+**File**: `package.json`
+- Move `@capacitor/push-notifications` out of `dependencies`. Keep the JS hook code intact (it already fails gracefully when the module is missing thanks to the dynamic import + `.catch`).
+- Without the package in `dependencies`, `npx cap sync android` will not register the native plugin, so Android won't try to initialize FCM and won't crash.
 
+### 2. Add an extra safety net in the hook
 **File**: `src/hooks/usePushNotifications.ts`
-- Wrap the dynamic import of `@capacitor/push-notifications` so the plugin module is **only loaded if the platform is native AND the plugin is actually available**.
-- Use `await import('@capacitor/push-notifications')` instead of a top-level import. If the import or `requestPermissions()` throws (i.e., FCM not configured), swallow the error and log a warning. This guarantees the app never crashes because of push.
-- Keep all listener registration inside the same try/catch.
+- Already uses dynamic import with `.catch` → keep as is. When the package is absent, `import()` rejects → caught silently → hook no-ops. No behavior change for users.
 
-**File**: `src/hooks/useBackButton.ts`
-- Same defensive treatment: wrap `@capacitor/app` in a dynamic import inside a try/catch so a missing/broken plugin can't crash launch.
+### 3. Verify nothing else added recently can crash post-login
+**Files reviewed (no changes — confirming they are safe)**:
+- `src/hooks/useBackButton.ts` — already dynamic-import + try/catch ✓
+- `capacitor.config.ts` — Keyboard `resize: 'none'` (your working keyboard fix) — **left untouched** ✓
+- `src/index.css` body safe-area — pure CSS, cannot crash ✓
+- `src/pages/Auth.tsx` scroll-on-focus — pure JS event handler, cannot crash ✓
 
-**File**: `src/App.tsx`
-- No structural change — both hooks remain wired but are now crash-proof.
+### 4. Re-enabling push later (documented, not done now)
+When the user is ready for real push:
+1. `npm i @capacitor/push-notifications`
+2. Create a Firebase project, download `google-services.json`, place it in `android/app/`
+3. `npx cap sync android` and rebuild
 
-### Layer 2 — Branding + clear FCM setup instructions (for when the user wants real push)
-
-The user must, locally:
-1. Place the Mijedu logo at `resources/icon.png` (1024×1024) and `resources/splash.png` (2732×2732).
-2. Run `npm i -D @capacitor/assets && npx capacitor-assets generate --android` to replace the Capacitor logo on the installer.
-3. (Only when push is wanted) Create a free Firebase project, download `google-services.json`, drop it into `android/app/`, then `npx cap sync android`.
-
-Until step 3 is done, push will silently no-op — but the app will install and run perfectly on any Android device.
+The hook already handles registration the moment the plugin is present.
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `src/hooks/usePushNotifications.ts` | Dynamic import + full try/catch so missing FCM never crashes the app |
-| `src/hooks/useBackButton.ts` | Dynamic import of `@capacitor/app` wrapped in try/catch |
+| `package.json` | Remove `@capacitor/push-notifications` from dependencies |
 
-No DB, route, or auth changes. After approval, the user runs locally:
+## Local Steps After Approval
 ```
 git pull
 npm install
 npx cap sync android
 ```
-…and the APK will install and launch on any Android device. Push remains dormant until `google-services.json` is added.
+Then rebuild the APK. The app will install, log in, and run on any Android device. Keyboard fix is preserved. Back button is preserved. Safe-area is preserved. Only the native FCM plugin (the actual crasher) is removed.
 
