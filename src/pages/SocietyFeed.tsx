@@ -365,6 +365,19 @@ const SocietyFeed = () => {
     fetchUserReactions();
   }, [activeTab]);
 
+  // Trending detector — fires a local notification when a post crosses the threshold
+  useEffect(() => {
+    if (!posts || posts.length === 0) return;
+    const top = posts.reduce((a, b) => (b.fire_count > a.fire_count ? b : a), posts[0]);
+    if (top.fire_count >= TRENDING_THRESHOLD) {
+      const watermark = trendingWatermark.get();
+      if (top.fire_count > watermark) {
+        notify.trending(top.content || 'A post is trending in your tribe', top.id);
+        trendingWatermark.set(top.fire_count);
+      }
+    }
+  }, [posts]);
+
   useEffect(() => {
     const postsChannel = supabase
       .channel('society-feed-posts')
