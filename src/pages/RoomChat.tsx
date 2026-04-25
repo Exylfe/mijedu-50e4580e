@@ -74,6 +74,14 @@ const RoomChat = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Schedule "room expiring" reminder when room data loads
+  useEffect(() => {
+    if (!room || !room.is_active) return;
+    const lastActivity = room.last_activity_at ? new Date(room.last_activity_at) : new Date();
+    const expiresAt = new Date(lastActivity.getTime() + ROOM_TTL_HOURS * 60 * 60 * 1000);
+    notify.roomExpiring(room.title, room.id, expiresAt);
+  }, [room?.id, room?.last_activity_at, room?.is_active]);
+
   const fetchRoomAndMessages = async () => {
     if (!roomId || !profile?.tribe) { setIsLoading(false); return; }
 
