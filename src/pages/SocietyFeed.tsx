@@ -20,6 +20,9 @@ import { toast } from 'sonner';
 import { useScrollVisibility } from '@/hooks/useScrollVisibility';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { notify, trendingWatermark } from '@/lib/notifications';
+
+const TRENDING_THRESHOLD = 10;
 
 interface PostWithProfile {
   id: string;
