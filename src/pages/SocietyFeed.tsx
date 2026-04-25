@@ -20,6 +20,9 @@ import { toast } from 'sonner';
 import { useScrollVisibility } from '@/hooks/useScrollVisibility';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { notify, trendingWatermark } from '@/lib/notifications';
+
+const TRENDING_THRESHOLD = 10;
 
 interface PostWithProfile {
   id: string;
@@ -361,6 +364,19 @@ const SocietyFeed = () => {
     fetchPromotedPosts();
     fetchUserReactions();
   }, [activeTab]);
+
+  // Trending detector — fires a local notification when a post crosses the threshold
+  useEffect(() => {
+    if (!posts || posts.length === 0) return;
+    const top = posts.reduce((a, b) => (b.fire_count > a.fire_count ? b : a), posts[0]);
+    if (top.fire_count >= TRENDING_THRESHOLD) {
+      const watermark = trendingWatermark.get();
+      if (top.fire_count > watermark) {
+        notify.trending(top.content || 'A post is trending in your tribe', top.id);
+        trendingWatermark.set(top.fire_count);
+      }
+    }
+  }, [posts]);
 
   useEffect(() => {
     const postsChannel = supabase

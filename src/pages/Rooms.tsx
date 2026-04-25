@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import BottomNav from '@/components/BottomNav';
+import { notify } from '@/lib/notifications';
 
 interface RoomWithDetails {
   id: string;
@@ -39,7 +40,20 @@ const Rooms = () => {
 
     const channel = supabase
       .channel('rooms-list')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'rooms' }, (payload) => {
+        const r: any = payload.new;
+        // Don't notify the creator about their own room
+        if (r?.user_id && user?.id && r.user_id !== user.id && r?.title) {
+          // Only if room is in user's tribe (or global)
+          if (isSuperAdmin || !r.tribe || r.tribe === profile?.tribe || r.tribe === 'global') {
+            notify.newRoom(r.title, r.id);
+          }
+        }
+        setCursor(null);
+        setHasMore(true);
+        fetchRooms(false);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms' }, () => {
         setCursor(null);
         setHasMore(true);
         fetchRooms(false);
@@ -47,7 +61,7 @@ const Rooms = () => {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [profile?.tribe, showExpired]);
+  }, [profile?.tribe, showExpired, user?.id, isSuperAdmin]);
 
   const enrichRooms = async (roomsData: any[]): Promise<RoomWithDetails[]> => {
     if ((!profile?.tribe && !isSuperAdmin) || roomsData.length === 0) return [];

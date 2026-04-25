@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import EmojiPicker from './EmojiPicker';
 import { useNavigate } from 'react-router-dom';
+import { notify } from '@/lib/notifications';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -268,6 +269,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, defaultVisibility, de
       console.error(error);
     } else {
       toast.success(isPublic && isPrivileged ? 'Post shared publicly!' : 'Post shared with your tribe!');
+      notify.postPublished();
       setContent('');
       localStorage.removeItem(POST_DRAFT_KEY);
       setIsPublic(true);
