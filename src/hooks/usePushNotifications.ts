@@ -21,7 +21,7 @@ export const usePushNotifications = () => {
         if (!Capacitor || !Capacitor.isNativePlatform?.()) return;
 
         // Dynamically import push plugin — if missing/unconfigured, fail silently
-        const mod = await import(/* @vite-ignore */ '@capacitor/push-notifications' as string).catch((e) => {
+        const mod = await import('@capacitor/push-notifications').catch((e) => {
           console.warn('[push] plugin unavailable:', e);
           return null;
         });
