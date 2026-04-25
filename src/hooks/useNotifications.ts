@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { notify } from '@/lib/notifications';
 
 export interface Notification {
   id: string;
@@ -99,6 +100,27 @@ export function useNotifications() {
             }
           } else {
             newNotif.actor_nickname = 'System';
+          }
+
+          // Mirror to a native local notification (no-op on web / missing plugin)
+          try {
+            const actor = newNotif.actor_nickname || 'Someone';
+            switch (newNotif.type) {
+              case 'comment':
+              case 'reply':
+                notify.newComment(actor);
+                break;
+              case 'follow':
+              case 'follower':
+                notify.newFollower(actor);
+                break;
+              case 'verification_approved':
+              case 'verified':
+                notify.verified();
+                break;
+            }
+          } catch (e) {
+            console.warn('[notify] mirror failed:', e);
           }
 
           setNotifications(prev => [newNotif, ...prev]);
