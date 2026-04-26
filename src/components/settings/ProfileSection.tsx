@@ -192,19 +192,12 @@ const ProfileSection = () => {
               aria-label="Change profile picture"
               className="relative group focus:outline-none focus:ring-2 focus:ring-primary rounded-full min-w-[44px] min-h-[44px]"
             >
-              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-primary/30 relative">
-                {form.avatar_url ? (
-                  <img
-                    src={form.avatar_url}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/placeholder.svg';
-                    }}
-                  />
-                ) : (
-                  <User className="w-10 h-10 text-muted-foreground" />
-                )}
+              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary/30 relative">
+                <UserAvatar
+                  src={previewUrl || form.avatar_url || null}
+                  name={form.nickname || profile?.nickname}
+                  size={96}
+                />
                 {isUploading && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <Loader2 className="w-6 h-6 text-white animate-spin" />
@@ -218,7 +211,7 @@ const ProfileSection = () => {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               capture="environment"
               className="hidden"
               onChange={handleAvatarSelect}
@@ -226,7 +219,7 @@ const ProfileSection = () => {
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">Profile picture</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Tap the avatar to upload from gallery or camera. Max 5MB.
+                Tap the avatar to upload from gallery or camera. JPG/PNG/WebP/GIF, max 3MB.
               </p>
             </div>
           </div>
