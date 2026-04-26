@@ -207,7 +207,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${import.meta.env.VITE_APP_URL || window.location.origin}/`;
+    const cap = await import('@capacitor/core').catch(() => ({ Capacitor: null as any }));
+    const isNative = cap.Capacitor?.isNativePlatform?.() ?? false;
+    const webBase = import.meta.env.VITE_APP_URL || (isNative ? 'https://mijedu.vercel.app' : window.location.origin);
+    const redirectUrl = `${webBase}/`;
     const { error } = await supabase.auth.signUp({
       email,
       password,

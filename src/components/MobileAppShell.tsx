@@ -62,7 +62,9 @@ const MobileAppShell = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Outlet />
+      <div className="max-w-2xl mx-auto w-full">
+        <Outlet />
+      </div>
 
       {/* Persistent Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
