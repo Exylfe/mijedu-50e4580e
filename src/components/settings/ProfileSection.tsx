@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Camera, Save, Facebook, Youtube, Instagram, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import UserAvatar from '@/components/UserAvatar';
+
+const MAX_AVATAR_BYTES = 3 * 1024 * 1024; // 3MB
+const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MIN_AVATAR_DIMENSION = 96;
+const MAX_AVATAR_DIMENSION = 4096;
+const EXT_BY_TYPE: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
 
 interface SocialLinks {
   facebook?: string;
@@ -30,23 +42,71 @@ const ProfileSection = () => {
     social_links: (profile?.social_links || {}) as SocialLinks
   });
 
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Revoke any object URL we created when the component unmounts or preview changes
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const validateImage = (file: File): Promise<{ width: number; height: number }> =>
+    new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Could not read image — file may be corrupted'));
+      };
+      img.src = url;
+    });
+
   const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !user) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please choose an image file');
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      toast.error('Use a JPG, PNG, WebP, or GIF image');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be smaller than 5MB');
+    if (file.size > MAX_AVATAR_BYTES) {
+      toast.error(`Image must be smaller than ${MAX_AVATAR_BYTES / (1024 * 1024)}MB`);
+      return;
+    }
+    if (file.size < 1024) {
+      toast.error('Image is too small to be valid');
       return;
     }
 
+    let dims: { width: number; height: number };
+    try {
+      dims = await validateImage(file);
+    } catch (err: any) {
+      toast.error(err?.message || 'Invalid image');
+      return;
+    }
+    if (dims.width < MIN_AVATAR_DIMENSION || dims.height < MIN_AVATAR_DIMENSION) {
+      toast.error(`Image must be at least ${MIN_AVATAR_DIMENSION}×${MIN_AVATAR_DIMENSION}px`);
+      return;
+    }
+    if (dims.width > MAX_AVATAR_DIMENSION || dims.height > MAX_AVATAR_DIMENSION) {
+      toast.error(`Image must be ${MAX_AVATAR_DIMENSION}px or smaller on each side`);
+      return;
+    }
+
+    // Show local preview immediately
+    const localPreview = URL.createObjectURL(file);
+    setPreviewUrl(localPreview);
+
     setIsUploading(true);
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const ext = EXT_BY_TYPE[file.type] || 'jpg';
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
@@ -70,6 +130,7 @@ const ProfileSection = () => {
       toast.error(err?.message || 'Upload failed');
     } finally {
       setIsUploading(false);
+      setPreviewUrl(null);
     }
   };
 
