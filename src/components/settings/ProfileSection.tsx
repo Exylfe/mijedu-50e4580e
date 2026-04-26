@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Camera, Save, Facebook, Youtube, Instagram, Link as LinkIcon } from 'lucide-react';
+import { User, Camera, Save, Facebook, Youtube, Instagram, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,12 +21,57 @@ interface SocialLinks {
 const ProfileSection = () => {
   const { user, profile, refreshProfile, isVipBrand } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     nickname: profile?.nickname || '',
     bio: profile?.bio || '',
     avatar_url: profile?.avatar_url || '',
     social_links: (profile?.social_links || {}) as SocialLinks
   });
+
+  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !user) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please choose an image file');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be smaller than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
+      if (uploadError) throw uploadError;
+
+      const { data: pub } = supabase.storage.from('avatars').getPublicUrl(path);
+      const publicUrl = pub.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user.id);
+      if (updateError) throw updateError;
+
+      setForm((f) => ({ ...f, avatar_url: publicUrl }));
+      refreshProfile?.();
+      toast.success('Profile picture updated');
+    } catch (err: any) {
+      toast.error(err?.message || 'Upload failed');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -80,8 +125,13 @@ const ProfileSection = () => {
         <CardContent className="space-y-4">
           {/* Avatar */}
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-primary/20">
+            <button
+              type="button"
+              onClick={() => !isUploading && fileInputRef.current?.click()}
+              aria-label="Change profile picture"
+              className="relative group focus:outline-none focus:ring-2 focus:ring-primary rounded-full min-w-[44px] min-h-[44px]"
+            >
+              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-primary/30 relative">
                 {form.avatar_url ? (
                   <img
                     src={form.avatar_url}
@@ -92,21 +142,31 @@ const ProfileSection = () => {
                     }}
                   />
                 ) : (
-                  <User className="w-8 h-8 text-muted-foreground" />
+                  <User className="w-10 h-10 text-muted-foreground" />
+                )}
+                {isUploading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  </div>
                 )}
               </div>
-              <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-primary text-white">
-                <Camera className="w-3 h-3" />
+              <div className="absolute -bottom-1 -right-1 p-2 rounded-full bg-primary text-white shadow-md group-hover:scale-110 transition-transform">
+                <Camera className="w-3.5 h-3.5" />
               </div>
-            </div>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleAvatarSelect}
+            />
             <div className="flex-1">
-              <Label className="text-muted-foreground text-sm">Profile Picture URL</Label>
-              <Input
-                placeholder="https://..."
-                value={form.avatar_url}
-                onChange={(e) => setForm({ ...form, avatar_url: e.target.value })}
-                className="mt-1 bg-muted/50 border-border"
-              />
+              <p className="text-sm font-medium text-foreground">Profile picture</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Tap the avatar to upload from gallery or camera. Max 5MB.
+              </p>
             </div>
           </div>
 
