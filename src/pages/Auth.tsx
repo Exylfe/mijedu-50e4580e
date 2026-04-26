@@ -106,12 +106,15 @@ const Auth = () => {
         }
 
         const tribe = tribes.find(t => t.name === selectedTribe);
+        const cap = await import('@capacitor/core').catch(() => ({ Capacitor: null as any }));
+        const isNative = cap.Capacitor?.isNativePlatform?.() ?? false;
+        const webBase = import.meta.env.VITE_APP_URL || (isNative ? 'https://mijedu.vercel.app' : window.location.origin);
         // Pass nickname and tribe as metadata — the handle_new_user trigger creates the profile
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${import.meta.env.VITE_APP_URL || window.location.origin}/`,
+            emailRedirectTo: `${webBase}/`,
             data: {
               nickname: nickname.trim(),
               tribe: selectedTribe,
@@ -269,9 +272,12 @@ const Auth = () => {
               onClick={async () => {
                 setIsLoading(true);
                 try {
+                  const cap = await import('@capacitor/core').catch(() => ({ Capacitor: null as any }));
+                  const isNative = cap.Capacitor?.isNativePlatform?.() ?? false;
+                  const webBase = import.meta.env.VITE_APP_URL || (isNative ? 'https://mijedu.vercel.app' : window.location.origin);
                   const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
-                    options: { redirectTo: import.meta.env.VITE_APP_URL || window.location.origin },
+                    options: { redirectTo: webBase },
                   });
                   if (error) toast.error(String(error));
                 } catch (err) {
@@ -301,8 +307,11 @@ const Auth = () => {
                       toast.error('Enter your email address first');
                       return;
                     }
+                    const cap = await import('@capacitor/core').catch(() => ({ Capacitor: null as any }));
+                    const isNative = cap.Capacitor?.isNativePlatform?.() ?? false;
+                    const webBase = import.meta.env.VITE_APP_URL || (isNative ? 'https://mijedu.vercel.app' : window.location.origin);
                     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                      redirectTo: `${import.meta.env.VITE_APP_URL || window.location.origin}/reset-password`,
+                      redirectTo: `${webBase}/reset-password`,
                     });
                     if (error) toast.error(error.message);
                     else toast.success('Password reset link sent to your email');
