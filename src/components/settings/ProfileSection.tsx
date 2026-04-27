@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Camera, Save, Facebook, Youtube, Instagram, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import UserAvatar from '@/components/UserAvatar';
+import { pickAvatar } from '@/lib/avatarPicker';
 
 const MAX_AVATAR_BYTES = 3 * 1024 * 1024; // 3MB
 const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -34,7 +35,6 @@ const ProfileSection = () => {
   const { user, profile, refreshProfile, isVipBrand } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     nickname: profile?.nickname || '',
     bio: profile?.bio || '',
@@ -66,20 +66,32 @@ const ProfileSection = () => {
       img.src = url;
     });
 
-  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file || !user) return;
+  const handleAvatarTap = async () => {
+    if (isUploading || !user) return;
+
+    let picked;
+    try {
+      picked = await pickAvatar();
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not open the picker');
+      return;
+    }
+    if (!picked) return; // user cancelled
+
+    const { file } = picked;
 
     if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      URL.revokeObjectURL(picked.previewUrl);
       toast.error('Use a JPG, PNG, WebP, or GIF image');
       return;
     }
     if (file.size > MAX_AVATAR_BYTES) {
+      URL.revokeObjectURL(picked.previewUrl);
       toast.error(`Image must be smaller than ${MAX_AVATAR_BYTES / (1024 * 1024)}MB`);
       return;
     }
     if (file.size < 1024) {
+      URL.revokeObjectURL(picked.previewUrl);
       toast.error('Image is too small to be valid');
       return;
     }
@@ -88,22 +100,22 @@ const ProfileSection = () => {
     try {
       dims = await validateImage(file);
     } catch (err: any) {
+      URL.revokeObjectURL(picked.previewUrl);
       toast.error(err?.message || 'Invalid image');
       return;
     }
     if (dims.width < MIN_AVATAR_DIMENSION || dims.height < MIN_AVATAR_DIMENSION) {
+      URL.revokeObjectURL(picked.previewUrl);
       toast.error(`Image must be at least ${MIN_AVATAR_DIMENSION}×${MIN_AVATAR_DIMENSION}px`);
       return;
     }
     if (dims.width > MAX_AVATAR_DIMENSION || dims.height > MAX_AVATAR_DIMENSION) {
+      URL.revokeObjectURL(picked.previewUrl);
       toast.error(`Image must be ${MAX_AVATAR_DIMENSION}px or smaller on each side`);
       return;
     }
 
-    // Show local preview immediately
-    const localPreview = URL.createObjectURL(file);
-    setPreviewUrl(localPreview);
-
+    setPreviewUrl(picked.previewUrl);
     setIsUploading(true);
     try {
       const ext = EXT_BY_TYPE[file.type] || 'jpg';
