@@ -200,9 +200,10 @@ const ProfileSection = () => {
           <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={() => !isUploading && fileInputRef.current?.click()}
+              onClick={handleAvatarTap}
+              disabled={isUploading}
               aria-label="Change profile picture"
-              className="relative group focus:outline-none focus:ring-2 focus:ring-primary rounded-full min-w-[44px] min-h-[44px]"
+              className="relative group focus:outline-none focus:ring-2 focus:ring-primary rounded-full min-w-[44px] min-h-[44px] disabled:opacity-80"
             >
               <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary/30 relative">
                 <UserAvatar
@@ -220,14 +221,6 @@ const ProfileSection = () => {
                 <Camera className="w-3.5 h-3.5" />
               </div>
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              capture="environment"
-              className="hidden"
-              onChange={handleAvatarSelect}
-            />
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">Profile picture</p>
               <p className="text-xs text-muted-foreground mt-0.5">

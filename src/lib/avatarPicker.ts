@@ -106,7 +106,7 @@ export const pickAvatar = async (): Promise<PickedImage | null> => {
         const msg = String(nativeErr?.message || nativeErr || '').toLowerCase();
         if (msg.includes('cancel') || msg.includes('denied')) return null;
 
-        errorLogger?.('avatar_picker_native_failed', nativeErr);
+        logError('avatar_picker_native_failed', String(nativeErr?.message || nativeErr));
         // Fall through to web picker as a last-resort fallback.
         return await pickFromBrowser();
       }
@@ -114,7 +114,7 @@ export const pickAvatar = async (): Promise<PickedImage | null> => {
 
     return await pickFromBrowser();
   } catch (err) {
-    errorLogger?.('avatar_picker_failed', err);
+    logError('avatar_picker_failed', String((err as any)?.message || err));
     return null;
   }
 };
