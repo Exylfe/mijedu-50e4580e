@@ -13,7 +13,7 @@
  * errorLogger so a misbehaving native plugin can never crash the app.
  */
 
-import { errorLogger } from '@/utils/errorLogger';
+import { logError } from '@/utils/errorLogger';
 
 export type PickedImage = {
   file: File;
