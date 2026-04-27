@@ -1238,6 +1238,91 @@ export type Database = {
           },
         ]
       }
+      profiles_public: {
+        Row: {
+          academic_level: string | null
+          avatar_url: string | null
+          bio: string | null
+          brand_description: string | null
+          brand_logo_url: string | null
+          brand_name: string | null
+          created_at: string | null
+          id: string | null
+          is_verified: boolean | null
+          nickname: string | null
+          points: number | null
+          role: string | null
+          social_links: Json | null
+          tribe: string | null
+          tribe_id: string | null
+          tribe_type: string | null
+          user_id: string | null
+          website_url: string | null
+        }
+        Insert: {
+          academic_level?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          brand_description?: string | null
+          brand_logo_url?: string | null
+          brand_name?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          nickname?: string | null
+          points?: number | null
+          role?: string | null
+          social_links?: Json | null
+          tribe?: string | null
+          tribe_id?: string | null
+          tribe_type?: string | null
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          academic_level?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          brand_description?: string | null
+          brand_logo_url?: string | null
+          brand_name?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          nickname?: string | null
+          points?: number | null
+          role?: string | null
+          social_links?: Json | null
+          tribe?: string | null
+          tribe_id?: string | null
+          tribe_type?: string | null
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "active_tribes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "trending_tribes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       room_lifecycle_stats: {
         Row: {
           created_at: string | null
@@ -1269,6 +1354,15 @@ export type Database = {
       can_admin_modify: {
         Args: { _admin_id: string; _target_user_id: string }
         Returns: boolean
+      }
+      get_my_sensitive_profile: {
+        Args: never
+        Returns: {
+          push_token: string
+          student_id_url: string
+          verification_code: string
+          whatsapp_number: string
+        }[]
       }
       get_room_lifecycle_stats: { Args: never; Returns: Json }
       get_room_message_counts: {

@@ -1,81 +1,89 @@
-# Mijedu Unified Web + Mobile Protocol — Adopt & Patch Gaps
 
-## Goal
+## Goals
 
-Lock in your 4-section protocol as **standing project rules** (so every future change follows it automatically) and patch the few small spots where the current code doesn't yet meet it. Today's codebase is already ~90% compliant.
+1. Profile photo upload works from **both Camera and Gallery** on Android (and from the file picker on web).
+2. Fix the **app stopping** issue (Android native crash) and add guard rails so it does not silently die again.
+3. Resolve the open **security findings** shown in the Security view.
 
-## Audit Result vs Your Protocol
+---
 
+## 1. Avatar upload — Camera OR Gallery (root cause of the crash)
 
-| Rule                                            | Status                                                            | Action                                                                                         |
-| ----------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `overscroll-behavior` on body                   | Partial — only `overscroll-behavior-y: contain` on `html`         | Patch: add `overscroll-behavior: none` to body                                                 |
-| 44×44 min touch targets                         | Done (mobile shell + memory rule already enforces)                | None                                                                                           |
-| Mobile-first + max-width on web                 | Bottom nav uses `max-w-lg`, but `Outlet` content is full-width    | Patch: wrap `MobileAppShell` `<Outlet/>` in `max-w-2xl mx-auto` so wide monitors don't stretch |
-| Safe-area insets                                | Done (`pb-safe`, `safe-top`, env() in body)                       | None                                                                                           |
-| Hybrid native vs web (Capacitor + Web fallback) | Done for push/local-notifications/back-button via dynamic imports | None                                                                                           |
-| Bottom nav (mobile) / sidebar (desktop)         | Bottom nav exists; no desktop sidebar variant                     | Defer — flag as future enhancement, not today                                                  |
-| `import.meta.env` for Supabase                  | Done                                                              | None                                                                                           |
-| Auth redirect handles Vercel + Capacitor        | Uses `VITE_APP_URL                                                | &nbsp;                                                                                         |
-| `supabase/migrations` as source of truth        | Done (50+ migrations committed)                                   | None — continue this pattern                                                                   |
-| Performance / image optim                       | Done (memory: image optimization util)                            | None                                                                                           |
-| `npx cap sync` compatibility                    | Done (no Node-only deps; native plugins dynamic-imported)         | None                                                                                           |
+**Why the app stops now:** `ProfileSection.tsx` uses `<input type="file" capture="environment">`. On Android Capacitor WebView this forces the **camera-only** intent — no gallery option, and on devices without a default camera handler the WebView intent fails and the app process is killed. Tapping it currently has no chooser.
 
+**Fix:**
+- Install `@capacitor/camera` (already a Capacitor-friendly package, browser-compatible, works with `npx cap sync`).
+- Create `src/lib/avatarPicker.ts` with `pickAvatar()`:
+  - On native (`Capacitor.isNativePlatform()`): call `Camera.getPhoto({ source: CameraSource.Prompt, ... })` which shows the native **"Camera / Photo Library / Cancel"** action sheet.
+  - On web: open the existing hidden `<input type="file" accept="image/*">` (no `capture` attribute, so the browser shows its standard chooser including gallery + camera on mobile browsers).
+  - Returns a `File` with size + dimension validation already centralized.
+- Update `ProfileSection.tsx`:
+  - Remove `capture="environment"` from the input.
+  - Tapping the avatar calls `pickAvatar()` → unified flow → existing validation + Supabase upload code stays the same.
+  - Permissions are requested by the plugin on first use; show a friendly toast if denied.
 
-## Patches (tiny, safe)
+---
 
-### 1. `src/index.css` — add overscroll lock to body
+## 2. Stability — prevent silent native crashes
 
-Add `overscroll-behavior: none;` alongside the existing body rules so the whole app feels native on web too (no rubber-band).
+- Wrap `pickAvatar()` in try/catch with structured errors logged via `errorLogger` so future failures are captured to the `error_logs` table instead of killing the app.
+- Verify the existing `ErrorBoundary` covers the Settings route; add a fallback if not.
+- Run a TypeScript build (`bun run build`) before finishing — type errors are the most common cause of an APK that boots then white-screens / closes.
+- Confirm `npx cap sync` compatibility: `@capacitor/camera` is a first-party Capacitor plugin, fully compatible.
 
-### 2. `src/components/MobileAppShell.tsx` — center content on wide screens
+---
 
-Wrap `<Outlet />` in a `<div className="max-w-2xl mx-auto w-full">` so on desktop / tablet the feed doesn't stretch edge-to-edge, while staying full-width on phones. Bottom nav already centers itself.
+## 3. Security findings (from the Security view)
 
-### 3. `src/contexts/AuthContext.tsx` and `src/pages/Auth.tsx` — Capacitor-aware redirects
+Apply via SQL migrations + edge function update:
 
-Compute `redirectUrl` once:
+### a. `profiles` exposes sensitive fields to all authenticated users
+- Drop the broad `profiles_select` policy.
+- Add two policies:
+  - `profiles_select_own` — `auth.uid() = user_id` (full row access to self).
+  - `profiles_select_public` — others can read but only via a new SECURITY INVOKER **view** `public.profiles_public` exposing only safe columns: `user_id, nickname, avatar_url, bio, tribe, tribe_id, tribe_type, is_verified, points, role, brand_name, brand_logo_url, brand_description, social_links, website_url, academic_level, created_at`.
+  - Excluded from public view: `whatsapp_number`, `verification_code`, `student_id_url`, `push_token`.
+- Keep base table readable for self only; update any client query that selects sensitive fields from other users to use `profiles_public` (audit and update call sites — most already only use safe fields).
 
-```ts
-const isNative = (await import('@capacitor/core').catch(()=>({Capacitor:null as any}))).Capacitor?.isNativePlatform?.();
-const redirectUrl = isNative
-  ? (import.meta.env.VITE_APP_URL || 'https://mijedu.vercel.app') + '/auth/callback'
-  : `${import.meta.env.VITE_APP_URL || window.location.origin}/auth/callback`;
-```
+### b. `notifications` INSERT is `WITH CHECK (true)`
+- Replace policy with: `WITH CHECK (actor_id = auth.uid() OR actor_id IS NULL AND user_id = auth.uid())`. This prevents spoofing while still allowing the existing app code (which sets `actor_id` to the acting user) to insert.
 
-Use this for `signUp.emailRedirectTo`, Google OAuth `redirectTo`, and password-reset `redirectTo`. This guarantees the email/OAuth callback always lands on the hosted Vercel URL (which is whitelisted in Supabase Auth) instead of the unsupported `capacitor://` scheme.
+### c. `ai-chat` edge function accepts unauthenticated requests
+- Add JWT verification at top of `supabase/functions/ai-chat/index.ts`:
+  - Read `Authorization` header, create a Supabase client with that header, call `auth.getUser()`, return 401 if missing/invalid.
+  - Use the authenticated `user.id` for any future server-side rate limiting (kept as a TODO note; client limit unchanged for now).
 
-## Save Protocol as Project Memory (so it auto-applies forever)
+### d. Banner storage policies missing admin check
+- Drop `Admin upload banners` and `Admin delete banners`, recreate with `is_admin(auth.uid())` in the WITH CHECK / USING clauses.
 
-Create `mem://project/unified-web-mobile-protocol` containing the 4 sections verbatim, and add a one-liner reference under **Core** in `mem://index.md` so every future Lovable session loads it as a standing rule:
+### e. Public bucket allows listing (avatars + others)
+- Already fixed for `avatars` in a prior migration. Also drop the broad `Public read banners` / `Public read post-media` / `Public read course-documents` SELECT policies on `storage.objects` — public buckets serve via CDN URLs and don't need a list policy.
 
-> *"Single codebase serves Web (Vercel) + Native (Capacitor). Enforce 44px touch targets, safe-area insets, overscroll:none, max-width on desktop, dynamic-imported Capacitor plugins with Web fallbacks, env-based Supabase config, and `supabase/migrations` as source of truth."*
+### f. Realtime channel authorization
+- Add RLS on `realtime.messages` restricting topic subscriptions to the authenticated user. Policy: subscribers may only join topics matching their own `auth.uid()` for `user-notifications-*` and topics they have access to for `room_messages` (verified via room membership). For now apply a conservative policy: allow only topics where the topic name contains `auth.uid()::text`, which matches the existing `user-notifications-{userId}` naming convention.
 
-## Files Changed
+### g. Security Definer View
+- Audit existing views; recreate any flagged view with `SECURITY INVOKER` (the default in PG 15+) or explicitly drop `SECURITY DEFINER`.
 
+### h. Leaked password protection (warn)
+- Cannot toggle from migrations — note in the response with a link to Auth settings so the user enables it manually.
 
-| File                                        | Change                                                   |
-| ------------------------------------------- | -------------------------------------------------------- |
-| `src/index.css`                             | Add `overscroll-behavior: none;` to `body`               |
-| `src/components/MobileAppShell.tsx`         | Wrap `<Outlet/>` in `max-w-2xl mx-auto w-full` container |
-| `src/contexts/AuthContext.tsx`              | Capacitor-aware redirect URL                             |
-| `src/pages/Auth.tsx`                        | Capacitor-aware redirect URL (signup, Google, reset)     |
-| `mem://project/unified-web-mobile-protocol` | New memory file with full protocol                       |
-| `mem://index.md`                            | Add Core line referencing the protocol                   |
+### i. Other warnings
+- `RLS Policy Always True` — covered by the notifications fix above.
+- `Public Bucket Allows Listing` — covered by storage policy cleanup.
 
+---
 
-## Out of Scope (today)
+## Files to change
 
-- Desktop sidebar variant of nav (would be a separate larger task — bottom nav is acceptable on desktop for now)
-- New Capacitor plugins (Camera/Share) — will be added with hybrid Web-API fallback when those features are actually requested
-- Implement a profile picture upload feature for the student profile page. Use Supabase Storage for this:
-- UI: Add an avatar circle with an 'Edit' icon. When clicked, it should open the device's file picker (or camera on mobile).
-- Storage: Create a function to upload the selected image to a Supabase bucket named avatars. Ensure the filename is unique (e.g., using crypto.randomUUID()).
-- Database: Once the upload is successful, retrieve the Public URL from Supabase Storage and update the avatar_url column in the profiles table for the current user.
-- Feedback: Show a loading spinner during the upload and a toast notification once the profile is updated.
+- **New**: `src/lib/avatarPicker.ts`
+- **Edit**: `src/components/settings/ProfileSection.tsx` (use new picker, remove `capture`)
+- **Edit**: `package.json` (add `@capacitor/camera`)
+- **Edit**: `supabase/functions/ai-chat/index.ts` (JWT verification)
+- **New migration**: profile RLS split + `profiles_public` view, notifications insert tightening, banner storage admin checks, drop public-bucket SELECT list policies, realtime channel policy, view security-invoker fixes.
 
-After approval and merge, run locally:
+## Verification before finishing
 
-```
-git pull && npm install && npx cap sync android
-```
+1. `bun run build` — must pass with zero type errors.
+2. Run Supabase linter — no new errors introduced.
+3. Manual self-review: confirm queries that read other users' profiles use only safe columns (or migrate them to `profiles_public`).
